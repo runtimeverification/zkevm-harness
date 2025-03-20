@@ -10,8 +10,12 @@ authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
 ]
 
+[tool.poetry.plugins.kdist]
+zkevm-semantics = "zkevm_harness.kdist.plugin"
+
 [tool.poetry.dependencies]
 python = "^3.10"
+kriscv = { git = "https://github.com/runtimeverification/riscv-semantics.git", tag =  "v0.1.53" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
