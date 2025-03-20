@@ -15,6 +15,14 @@ class Contract(NamedTuple):
     bin_runtime: bytes
     abi: dict[str, Any]
 
+    def calldata(self, fn: str, *args: Any) -> bytes:
+        from web3 import Web3
+
+        w3 = Web3()
+        contract = w3.eth.contract(abi=self.abi)
+        encoded = contract.encode_abi(fn, args)
+        return bytes.fromhex(encoded[2:])
+
 
 def compile(file: str | Path, contract: str) -> Contract:
     file = Path(file)
