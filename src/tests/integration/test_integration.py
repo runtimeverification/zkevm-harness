@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
+from kriscv.tools import Tools
 from pyk.utils import run_process_2
 
 from .utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterator
     from pathlib import Path
     from typing import Final
+
+    from elftools.elf.elffile import ELFFile  # type: ignore
 
     from zkevm_harness.solc import Contract
 
@@ -53,6 +57,20 @@ def load_template(tmp_path: Path) -> TemplateLoader:
     return TemplateLoader(tmp_path)
 
 
+@pytest.fixture
+def tools(tmp_path: Path) -> Callable[[str], Tools]:
+    def _tools(target: str) -> Tools:
+        from pyk.kdist import kdist
+
+        definition_dir = kdist.get(target)
+
+        temp_dir = tmp_path / 'kriscv'
+        temp_dir.mkdir()
+        return Tools(definition_dir, temp_dir=temp_dir)
+
+    return _tools
+
+
 def solc_compile(*, contract_file: str, contract_name: str) -> Contract:
     from zkevm_harness import solc
 
@@ -70,6 +88,8 @@ class BuildConfig(NamedTuple):
     zkvm_deps: str
     src_header: str
     elf_path: str
+    end_pattern: str
+    target: str
 
 
 def dedent(text: str) -> str:
@@ -95,6 +115,8 @@ RISC0_CONFIG: Final = BuildConfig(
         """
     ),
     elf_path='target/riscv32im-risc0-zkvm-elf/docker',
+    end_pattern='sys_halt',
+    target='zkevm-semantics.risc0',
 )
 
 SP1_CONFIG: Final = BuildConfig(
@@ -107,6 +129,8 @@ SP1_CONFIG: Final = BuildConfig(
         """
     ),
     elf_path='target/elf-compilation/riscv32im-succinct-zkvm-elf/release',
+    end_pattern='_ZN8sp1_zkvm8syscalls4halt12syscall_halt*',
+    target='zkevm-semantics.sp1',
 )
 
 
@@ -121,7 +145,12 @@ ADD_TEST_DATA: Final = (
     ADD_TEST_DATA,
     ids=[test_id for test_id, *_ in ADD_TEST_DATA],
 )
-def test_add(load_template: TemplateLoader, test_id: str, build_config: BuildConfig) -> None:
+def test_add(
+    tools: Callable[[str], Tools],
+    load_template: TemplateLoader,
+    test_id: str,
+    build_config: BuildConfig,
+) -> None:
     # Given
     contract = solc_compile(contract_file='Add.sol', contract_name='Add')
     project_name = 'add-test'
@@ -135,7 +164,57 @@ def test_add(load_template: TemplateLoader, test_id: str, build_config: BuildCon
             'contract_input': gen_u8_array(contract.calldata(*calldata)),
         },
     )
+
+    # When
     run_process_2(build_config.build_cmd, cwd=project_dir)
     elf_file = project_dir / build_config.elf_path / project_name
 
+    # Then
     assert elf_file.is_file()
+
+    # And given
+    result_addr = resolve_symbol(elf_file, 'RESULT')
+    (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
+    kriscv = tools(build_config.target)
+
+    # When
+    config = kriscv.run_elf(
+        elf_file,
+        regs=dict.fromkeys(range(32), 0),
+        end_symbol=end_symbol,
+    )
+
+    # Then
+    assert kriscv.get_memory(config)[result_addr + 31] == 3
+
+
+def resolve_symbol(elf_file: Path, symbol: str) -> int:
+    from kriscv.elf_parser import read_unique_symbol
+
+    with _elf_file(file=elf_file) as elf:
+        return read_unique_symbol(elf, symbol, error_loc=None)
+
+
+def get_symbols(elf_file: Path, pattern: str) -> list[str]:
+    import fnmatch
+
+    with _elf_file(file=elf_file) as elf:
+        symtab = elf.get_section_by_name('.symtab')
+        assert symtab
+
+        func_symbols = [
+            sym.name
+            for sym in symtab.iter_symbols()
+            if sym['st_info']['type'] == 'STT_FUNC'  # Check if symbol type is FUNC
+        ]
+
+        return fnmatch.filter(func_symbols, pattern)
+
+
+@contextmanager
+def _elf_file(file: Path) -> Iterator[ELFFile]:
+    from elftools.elf.elffile import ELFFile  # type: ignore
+
+    with file.open('rb') as f:
+        elf = ELFFile(f)
+        yield elf
