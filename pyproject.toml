@@ -35,6 +35,9 @@ pytest-mock = "*"
 pytest-xdist = "*"
 pyupgrade = "*"
 
+[tool.pytest.ini_options]
+log_level = "INFO"
+
 [tool.isort]
 profile = "black"
 line_length = 120
