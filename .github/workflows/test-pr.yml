@@ -1,0 +1,51 @@
+name: 'Test PR'
+on:
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code-quality-checks:
+    name: 'Code Quality Checks & Unit Tests'
+    runs-on: [self-hosted, linux, normal]
+    timeout-minutes: 5
+    env:
+      CONTAINER: zkevm-unit-${{ github.sha }}
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          container-name: ${CONTAINER}
+      - name: 'Run code quality checks'
+        run: docker exec -u user ${CONTAINER} make check
+      - name: 'Run pyupgrade'
+        run: docker exec -u user ${CONTAINER} make pyupgrade
+      - name: 'Run unit tests'
+        run: docker exec -u user ${CONTAINER} make cov-unit
+      - name: 'Tear down Docker container'
+        if: always()
+        run: |
+          docker stop --time=0 ${CONTAINER}
+
+  integration-tests:
+    name: 'Integration Tests'
+    runs-on: [self-hosted, linux, normal]
+    timeout-minutes: 5
+    env:
+      CONTAINER: zkevm-integration-${{ github.sha }}
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          container-name: ${CONTAINER}
+      - name: 'Run integration tests'
+        run: docker exec -u user ${CONTAINER} make cov-integration
+      - name: 'Tear down Docker container'
+        if: always()
+        run: |
+          docker stop --time=0 ${CONTAINER}
