@@ -8,6 +8,8 @@ RUN apt-get -y update         \
       python${PYTHON_VERSION} \
  && apt-get -y clean
 
+RUN curl -fLsS https://get.docker.com | sh
+
 ARG USER_NAME=user
 ARG USER_ID=9876
 

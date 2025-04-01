@@ -37,6 +37,9 @@ runs:
       TAG=runtimeverificationinc/${CONTAINER_NAME}
       WORKDIR=/home/user
 
+      SOCK=/var/run/docker.sock
+      DOCKER_ID=$(getent group docker | cut -d: -f3)
+
       docker run                 \
         --name ${CONTAINER_NAME} \
         --rm                     \
@@ -45,7 +48,9 @@ runs:
         --detach                 \
         --user root              \
         --workdir ${WORKDIR}     \
+        --volume ${SOCK}:${SOCK} \
         ${TAG}
 
       docker cp . ${CONTAINER_NAME}:${WORKDIR}
       docker exec ${CONTAINER_NAME} chown -R user:user ${WORKDIR}
+      docker exec ${CONTAINER_NAME} /bin/bash -c "groupadd -g ${DOCKER_ID} host-docker && usermod -aG host-docker user"
