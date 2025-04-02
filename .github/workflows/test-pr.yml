@@ -8,27 +8,27 @@ concurrency:
 jobs:
   code-quality-checks:
     name: 'Code Quality Checks & Unit Tests'
-    runs-on: [self-hosted, linux, normal]
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      CONTAINER: zkevm-unit-${{ github.sha }}
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
+      - name: 'Install Python'
+        uses: actions/setup-python@v5
         with:
-          container-name: ${CONTAINER}
+          python-version: '3.12'
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v9
+        with:
+          poetry-version: '2.1.1'
+      - name: 'Install dependencies'
+        run: poetry install
       - name: 'Run code quality checks'
-        run: docker exec -u user ${CONTAINER} make check
+        run: make check
       - name: 'Run pyupgrade'
-        run: docker exec -u user ${CONTAINER} make pyupgrade
+        run: make pyupgrade
       - name: 'Run unit tests'
-        run: docker exec -u user ${CONTAINER} make cov-unit
-      - name: 'Tear down Docker container'
-        if: always()
-        run: |
-          docker stop --time=0 ${CONTAINER}
+        run: make cov-unit
 
   integration-tests:
     name: 'Integration Tests'
@@ -43,6 +43,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: ${CONTAINER}
+      - name: 'Install dependencies'
+        run: docker exec -u user ${CONTAINER} poetry install
       - name: 'Run integration tests'
         run: docker exec -u user ${CONTAINER} make cov-integration
       - name: 'Tear down Docker container'
