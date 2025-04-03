@@ -8,6 +8,8 @@ RUN apt-get -y update         \
       python${PYTHON_VERSION} \
  && apt-get -y clean
 
+RUN curl -fLsS https://get.docker.com | sh
+
 ARG USER_NAME=user
 ARG USER_ID=9876
 
@@ -20,14 +22,21 @@ RUN groupadd -g ${GROUP_ID} ${GROUP_NAME} \
 USER ${USER_NAME}
 
 ENV PATH="/home/${USER_NAME}/.cargo/bin:${PATH}"
-ARG RUST_VERSION="1.85.1"
+# Setting a fixed version causes issues in the +succinct toolchain for cargo
+ARG RUST_VERSION="stable"
 RUN curl -fLsS https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION} \
  && rustc --version
+
+ARG SOLC_VERSION="0.8.29"
+RUN cargo install svm-rs \
+ && svm install ${SOLC_VERSION} \
+ && solc --version
 
 ENV PATH="/home/${USER_NAME}/.risc0/bin:${PATH}"
 ARG RISC0_VERSION
 RUN curl -fLsS https://risczero.com/install | bash  \
  && rzup install cargo-risczero ${RISC0_VERSION} \
+ && rzup install rust \
  && cargo risczero --version
 
 ENV PATH="/home/${USER_NAME}/.sp1/bin:${PATH}"

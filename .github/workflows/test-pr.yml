@@ -33,7 +33,7 @@ jobs:
   integration-tests:
     name: 'Integration Tests'
     runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 5
+    timeout-minutes: 15
     env:
       CONTAINER: zkevm-integration-${{ github.sha }}
     steps:
@@ -45,6 +45,8 @@ jobs:
           container-name: ${CONTAINER}
       - name: 'Install dependencies'
         run: docker exec -u user ${CONTAINER} poetry install
+      - name: 'Build K definitions'
+        run: docker exec -u user ${CONTAINER} make kdist
       - name: 'Run integration tests'
         run: docker exec -u user ${CONTAINER} make cov-integration
       - name: 'Tear down Docker container'
