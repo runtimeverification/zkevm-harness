@@ -12,10 +12,27 @@ if TYPE_CHECKING:
 
 
 class Contract(NamedTuple):
+    """
+    A named tuple representing a compiled Solidity contract.
+
+    Attributes:
+        bin_runtime: The runtime bytecode of the contract.
+        abi: The ABI of the contract.
+    """
     bin_runtime: bytes
     abi: dict[str, Any]
 
     def calldata(self, fn: str, *args: Any) -> bytes:
+        """
+        Encode a function call to the contract.
+
+        Args:
+            fn: The name of the function to call.
+            args: The arguments to pass to the function.
+
+        Returns:
+            The calldata in hex format for the function call.
+        """
         from web3 import Web3
 
         w3 = Web3()
@@ -25,6 +42,16 @@ class Contract(NamedTuple):
 
 
 def compile(file: str | Path, contract: str) -> Contract:
+    """
+    Compile a Solidity contract using solc.
+
+    Args:
+        file: The path to the contract file.
+        contract: The name of the contract to compile.
+
+    Returns:
+        A `Contract` named tuple containing the contract's ABI and runtime bytecode.
+    """
     file = Path(file)
     check_file_path(file)
 

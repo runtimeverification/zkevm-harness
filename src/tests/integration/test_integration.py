@@ -24,7 +24,12 @@ CONTRACT_DIR: Final = TEST_DATA_DIR / 'contracts'
 
 
 class TemplateLoader:
-    _path: Path
+    """
+    A class for loading templates and rendering them with context.
+
+    Attributes:
+        _path: The path to the directory containing the templates.
+    """
 
     def __init__(self, path: Path):
         self._path = path
@@ -175,6 +180,7 @@ def test_add(
     # And given
     result_addr = resolve_symbol(elf_file, 'RESULT')
     (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
+    print(f'end_symbol: {end_symbol}')
     kriscv = tools(build_config.target)
 
     # When
