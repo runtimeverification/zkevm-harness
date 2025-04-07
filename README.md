@@ -11,8 +11,8 @@
 #### K Framework
 
 
-You need to install the [K Framework] on your system, see the instructions there.
-The fastest way is via the [kup package manager], with which you can do to get the correct version of K:
+You need to install the [K Framework](https://github.com/runtimeverification/k) on your system, see the instructions there.
+The fastest way is via the [kup package manager](https://github.com/runtimeverification/kup), with which you can do to get the correct version of K:
 
 ```sh
 kup install k.openssl.secp256k1 --version v$(cat deps/k_release)
@@ -30,8 +30,8 @@ poetry install
 To run `make cov-integration`, you need to install the dependencies for the [risc0](https://github.com/risc0/risc0) and [sp1](https://github.com/succinctlabs/sp1) projects and [docker](https://www.docker.com/). Note that the version of `risc0` should be `2.0.0`:
 
 ```sh
-rustup install cargo-risczero 2.0.0
-rustup install r0vm 2.0.0
+rzup install cargo-risczero 2.0.0
+rzup install r0vm 2.0.0
 ```
 
 #### Build Semantics
