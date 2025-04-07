@@ -180,7 +180,6 @@ def test_add(
     # And given
     result_addr = resolve_symbol(elf_file, 'RESULT')
     (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
-    print(f'end_symbol: {end_symbol}')
     kriscv = tools(build_config.target)
 
     # When
