@@ -19,6 +19,7 @@ class Contract(NamedTuple):
         bin_runtime: The runtime bytecode of the contract.
         abi: The ABI of the contract.
     """
+
     bin_runtime: bytes
     abi: dict[str, Any]
 
