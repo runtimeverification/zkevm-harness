@@ -24,7 +24,12 @@ CONTRACT_DIR: Final = TEST_DATA_DIR / 'contracts'
 
 
 class TemplateLoader:
-    _path: Path
+    """
+    A class for loading templates and rendering them with context.
+
+    Attributes:
+        _path: The path to the directory containing the templates.
+    """
 
     def __init__(self, path: Path):
         self._path = path
