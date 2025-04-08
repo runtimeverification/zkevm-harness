@@ -9,6 +9,7 @@ use revm_interpreter::DummyHost;
 
 static BIN_RUNTIME: {{ contract_bin_runtime }}
 
+#[unsafe(no_mangle)]
 static INPUT: {{ contract_input }}
 
 #[unsafe(no_mangle)]

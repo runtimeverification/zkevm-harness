@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 import pytest
-from kriscv.tools import Tools
+from kriscv.tools import Tools, elf_parser, term_builder, ELFFile
+from kriscv.symtools import SymTools
 from pyk.utils import run_process_2
-
+import itertools
+from pyk.prelude.bytes import bytesToken
+from pyk.prelude.kint import intToken, eqInt
+from pyk.prelude.ml import mlEqualsTrue
+from pyk.cterm import CTerm, CSubst, cterm_build_claim
+from pyk.kast.inner import KApply, KVariable, KSort, Subst, KSequence
+from pyk.proof import APRProof, APRProver
+from pyk.utils import ensure_dir_path
 from .utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
@@ -79,6 +87,11 @@ def tools(tmp_path: Path) -> Callable[[str], Tools]:
 
     return _tools
 
+@pytest.fixture
+def sym_tools() -> SymTools:
+    tmp_path = TEST_DATA_DIR / 'sym'
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    return SymTools.default(proof_dir=tmp_path)
 
 def solc_compile(*, contract_file: str, contract_name: str) -> Contract:
     from zkevm_harness import solc
@@ -156,6 +169,7 @@ ADD_TEST_DATA: Final = (
 )
 def test_add(
     tools: Callable[[str], Tools],
+    sym_tools: SymTools,
     load_template: TemplateLoader,
     test_id: str,
     build_config: BuildConfig,
@@ -182,11 +196,105 @@ def test_add(
     assert elf_file.is_file()
 
     # And given
+    input_addr = resolve_symbol(elf_file, 'INPUT')
+    symvars = {'W0': (input_addr + 4, 32), 'W1': (input_addr + 4 + 32, 32)}
+    # Sort symvars by address (first element of the tuple)
+    symvars = dict(sorted(symvars.items(), key=lambda item: item[1][0]))
     result_addr = resolve_symbol(elf_file, 'RESULT')
     (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
     print(f'end_symbol: {end_symbol}')
     kriscv = tools(build_config.target)
+    
+    regs = dict.fromkeys(range(32), 0)
+    
+    with open(elf_file, 'rb') as f:
+        elf = ELFFile(f)
+        if end_symbol is not None:
+            end_addr = elf_parser.read_unique_symbol(elf, end_symbol, error_loc=str(elf_file))
+            halt_cond = term_builder.halt_at_address(term_builder.word(end_addr))
+        else:
+            halt_cond = term_builder.halt_never()
+        config_vars = {
+            '$REGS': term_builder.regs(regs or {}),
+            '$MEM': elf_parser.memory(elf),
+            '$PC': elf_parser.entry_point(elf),
+            '$HALT': halt_cond,
+        }
+        memseg = elf_parser._memory_segments(elf)
+    
+    clean_data: list[tuple[int, bytes]] = sorted(term_builder.normalize_memory(memseg).items())
 
+    if len(clean_data) == 0:
+        return term_builder.dot_sb()
+
+    # Collect all empty gaps between segements
+    gaps = []
+    start = clean_data[0][0]
+    if start != 0:
+        gaps.append((0, start))
+    for (start1, val1), (start2, _) in itertools.pairwise(clean_data):
+        end1 = start1 + len(val1)
+        # normalize_memory should already have merged consecutive segments
+        assert end1 < start2
+        gaps.append((end1, start2 - end1))
+
+    # Merge segments and gaps into a list of sparse bytes items
+    sparse_data: list[tuple[int, int | bytes]] = sorted(
+        cast('list[tuple[int, int | bytes]]', clean_data) + cast('list[tuple[int, int | bytes]]', gaps), reverse=True
+    )
+
+    sparse_k = term_builder.dot_sb()
+    for addr, gap_or_val in sparse_data:
+        if isinstance(gap_or_val, int):
+            for varname, (varaddr, varsize) in symvars.items():
+                if addr <= varaddr < addr + gap_or_val:
+                    assert varaddr + varsize <= addr + gap_or_val
+                    print(f'{varname} in empty gap')
+            sparse_k = term_builder.sb_empty_cons(term_builder.sb_empty(intToken(gap_or_val)), sparse_k)
+        elif isinstance(gap_or_val, bytes):
+            todo_addr = addr
+            curr_bytes = None
+            for varname, (varaddr, varsize) in symvars.items():
+                if addr <= varaddr < addr + len(gap_or_val):
+                    assert varaddr + varsize <= addr + len(gap_or_val)
+                    # Extract bytes before the variable
+                    if varaddr > todo_addr:
+                        tmp_bytes = bytesToken(gap_or_val[todo_addr - addr:varaddr - addr])
+                        curr_bytes = tmp_bytes if curr_bytes is None else KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', curr_bytes, tmp_bytes)
+                    
+                    curr_bytes = KVariable(varname, 'Bytes') if curr_bytes is None else KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', curr_bytes, KVariable(varname, 'Bytes'))
+                    
+                    # Skip over the variable bytes
+                    todo_addr = varaddr + varsize
+                    
+            if todo_addr < addr + len(gap_or_val):
+                tmp_bytes = bytesToken(gap_or_val[todo_addr - addr:])
+                curr_bytes = tmp_bytes if curr_bytes is None else KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', curr_bytes, tmp_bytes)
+            sparse_k = term_builder.sb_bytes_cons(term_builder.sb_bytes(curr_bytes), sparse_k)
+        else:
+            raise AssertionError()
+        
+    config = kriscv.init_config(config_vars)
+    config_vars['$MEM'] = sparse_k
+    sym_init_config = kriscv.init_config(config_vars)
+    constraints = []
+    for varname, (varaddr, varsize) in symvars.items():
+        constraints.append( mlEqualsTrue(eqInt(KApply('lengthBytes(_)_BYTES-HOOKED_Int_Bytes', [KVariable(varname, 'Bytes')]), intToken(varsize))) )
+    init_cterm = CTerm(sym_init_config, constraints)
+    sym_final_config = CTerm(sym_tools.kprove.definition.empty_config(KSort('GeneratedTopCell')))
+    _final_subst = {vname: KVariable('FINAL_' + vname) for vname in sym_final_config.free_vars}
+    _final_subst['INSTRS_CELL'] = KSequence([KApply('#HALT_RISCV-TERMINATION_KItem'), KVariable('FINAL_INSTRS_CELL')])
+    final_subst = CSubst(Subst(_final_subst))
+    final_cterm = final_subst(sym_final_config)
+    kclaim = cterm_build_claim('ADD', init_cterm, final_cterm)
+    proof = APRProof.from_claim(sym_tools.kprove.definition, kclaim[0], {}, sym_tools.proof_dir)
+    with sym_tools.explore(id='ADD') as kcfg_explore:
+        prover = APRProver(
+            kcfg_explore=kcfg_explore,
+            execute_depth=1,
+        )
+        prover.advance_proof(proof, max_iterations=49)
+    
     # When
     config = kriscv.run_elf(
         elf_file,
@@ -195,6 +303,7 @@ def test_add(
     )
 
     # Then
+    memory = kriscv.get_memory(config)
     assert kriscv.get_memory(config)[result_addr + 31] == 3
 
 
