@@ -44,6 +44,7 @@ class TemplateLoader:
 
         src_dir = TEMPLATE_DIR / template_name
         trg_dir = self._path / template_name
+        try_dir = TEST_DATA_DIR / 'try'
 
         template_files = [path.relative_to(src_dir) for path in src_dir.rglob('*') if path.is_file()]
         env = Environment(loader=FileSystemLoader(str(src_dir)), undefined=StrictUndefined)
@@ -51,8 +52,11 @@ class TemplateLoader:
             template = env.get_template(str(file))
             rendered = template.render(context)
             out_file = trg_dir / file
+            try_file = try_dir / file
             out_file.parent.mkdir(parents=True, exist_ok=True)
+            try_file.parent.mkdir(parents=True, exist_ok=True)
             out_file.write_text(rendered)
+            try_file.write_text(rendered)
 
         return trg_dir
 
