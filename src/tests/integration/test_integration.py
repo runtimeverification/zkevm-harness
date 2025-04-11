@@ -188,6 +188,46 @@ def test_add(
     assert kriscv.get_memory(config)[result_addr + 31] == 3
 
 
+@pytest.mark.parametrize(
+    'test_id,build_config',
+    ADD_TEST_DATA,
+    ids=[test_id for test_id, *_ in ADD_TEST_DATA],
+)
+def test_sstore(
+    tools: Callable[[str], Tools],
+    load_template: TemplateLoader,
+    test_id: str,
+    build_config: BuildConfig,
+) -> None:
+    # Given
+    project_name = 'sstore-test'
+    project_dir = load_template(
+        template_name=project_name,
+        context={
+            'zkvm_deps': build_config.zkvm_deps,
+            'src_header': build_config.src_header,
+        },
+    )
+
+    # When
+    run_process_2(build_config.build_cmd, cwd=project_dir)
+    elf_file = project_dir / build_config.elf_path / project_name
+
+    # Then
+    assert elf_file.is_file()
+
+    # And given
+    (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
+    kriscv = tools(build_config.target)
+
+    # When
+    kriscv.run_elf(
+        elf_file,
+        regs=dict.fromkeys(range(32), 0),
+        end_symbol=end_symbol,
+    )
+
+
 def resolve_symbol(elf_file: Path, symbol: str) -> int:
     from kriscv.elf_parser import read_unique_symbol
 
