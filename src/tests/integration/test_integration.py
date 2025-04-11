@@ -16,11 +16,8 @@ if TYPE_CHECKING:
 
     from elftools.elf.elffile import ELFFile  # type: ignore
 
-    from zkevm_harness.solc import Contract
-
 
 TEMPLATE_DIR: Final = TEST_DATA_DIR / 'templates'
-CONTRACT_DIR: Final = TEST_DATA_DIR / 'contracts'
 
 
 class TemplateLoader:
@@ -69,18 +66,6 @@ def tools(tmp_path: Path) -> Callable[[str], Tools]:
         return Tools(definition_dir, temp_dir=temp_dir)
 
     return _tools
-
-
-def solc_compile(*, contract_file: str, contract_name: str) -> Contract:
-    from zkevm_harness import solc
-
-    return solc.compile(CONTRACT_DIR / contract_file, contract_name)
-
-
-def gen_u8_array(bs: bytes) -> str:
-    blen = len(bs)
-    bstr = ', '.join(f'0x{b:02x}' for b in bs)
-    return f'[u8; {blen}] = [{bstr}];'
 
 
 class BuildConfig(NamedTuple):
@@ -152,16 +137,12 @@ def test_add(
     build_config: BuildConfig,
 ) -> None:
     # Given
-    contract = solc_compile(contract_file='Add.sol', contract_name='Add')
     project_name = 'add-test'
-    calldata = ('add', 1, 2)
     project_dir = load_template(
         template_name=project_name,
         context={
             'zkvm_deps': build_config.zkvm_deps,
             'src_header': build_config.src_header,
-            'contract_bin_runtime': gen_u8_array(contract.bin_runtime),
-            'contract_input': gen_u8_array(contract.calldata(*calldata)),
         },
     )
 
