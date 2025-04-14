@@ -7,7 +7,7 @@ import pytest
 from kriscv.tools import Tools
 from pyk.utils import run_process_2
 
-from .utils import TEST_DATA_DIR
+from .utils import RISC0_VERSION, SP1_VERSION, TEST_DATA_DIR
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -101,9 +101,9 @@ def dedent(text: str) -> str:
 RISC0_CONFIG: Final = BuildConfig(
     build_cmd=('cargo', 'risczero', 'build'),
     zkvm_deps=dedent(
-        """
+        f"""
         bytemuck_derive = "=1.8.1"
-        risc0-zkvm = { version = "=2.0.1", default-features = false }
+        risc0-zkvm = {{ version = "={RISC0_VERSION}", default-features = false }}
         """
     ),
     src_header=dedent(
@@ -121,7 +121,7 @@ RISC0_CONFIG: Final = BuildConfig(
 
 SP1_CONFIG: Final = BuildConfig(
     build_cmd=('cargo', 'prove', 'build'),
-    zkvm_deps='sp1-zkvm = "=4.1.7"',
+    zkvm_deps=f'sp1-zkvm = "={SP1_VERSION}"',
     src_header=dedent(
         """
         #![no_main]
