@@ -19,13 +19,15 @@ runs:
 
       K_VERSION=$(cat deps/k_release)
       RISC0_VERSION=$(cat deps/risc0_release)
+      RISC0_RUST_VERSION=$(cat deps/risc0_rust_release)
       SP1_VERSION=$(cat deps/sp1_release)
 
-      docker build .                               \
-        --file ${DOCKERFILE}                       \
-        --build-arg K_VERSION=${K_VERSION}         \
-        --build-arg RISC0_VERSION=${RISC0_VERSION} \
-        --build-arg SP1_VERSION=${SP1_VERSION}     \
+      docker build .                                         \
+        --file ${DOCKERFILE}                                 \
+        --build-arg K_VERSION=${K_VERSION}                   \
+        --build-arg RISC0_VERSION=${RISC0_VERSION}           \
+        --build-arg RISC0_RUST_VERSION=${RISC0_RUST_VERSION} \
+        --build-arg SP1_VERSION=${SP1_VERSION}               \
         --tag ${TAG}
 
   - name: 'Run Docker container'

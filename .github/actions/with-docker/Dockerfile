@@ -34,9 +34,10 @@ RUN cargo install svm-rs \
 
 ENV PATH="/home/${USER_NAME}/.risc0/bin:${PATH}"
 ARG RISC0_VERSION
+ARG RISC0_RUST_VERSION
 RUN curl -fLsS https://risczero.com/install | bash  \
  && rzup install cargo-risczero ${RISC0_VERSION} \
- && rzup install rust \
+ && rzup install rust ${RISC0_RUST_VERSION} \
  && cargo risczero --version
 
 ENV PATH="/home/${USER_NAME}/.sp1/bin:${PATH}"
