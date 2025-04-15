@@ -8,33 +8,35 @@ use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
 
 #[unsafe(no_mangle)]
-static mut STATE: u8 = 0;
+pub static mut OPCODE: u8 = 0x01; // ADD
 
 #[unsafe(no_mangle)]
-static OPCODE: u8 = 0x01; // ADD
-
-#[unsafe(no_mangle)]
-static OP1: [u8; 32] = [
+pub static mut OP1: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 ];
 
 #[unsafe(no_mangle)]
-static OP2: [u8; 32] = [
+pub static mut OP2: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
 ];
 
 #[unsafe(no_mangle)]
-static mut STACK_ADDR: usize = 0;
+pub static mut STATE: u8 = 0;
 
 #[unsafe(no_mangle)]
-static mut RESULT: [u8; 32] = [0x00; 32];
+pub static mut STACK_ADDR: usize = 0;
+
+#[unsafe(no_mangle)]
+pub static mut RESULT: [u8; 32] = [0x00; 32];
 
 fn main() {
     // Given
     let input = Bytes::from([]);
-    let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
+    let bytecode = unsafe {
+        Bytecode::new_raw(Bytes::from([OPCODE]))
+    };
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
     let call_value = U256::ZERO;
@@ -56,12 +58,14 @@ fn main() {
 
     stack_addr_ready();
 
-    let Ok(()) = interpreter.stack.push(U256::from_be_bytes(OP1)) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(U256::from_be_bytes(OP2)) else {
-        panic!()
-    };
+    unsafe {
+        let Ok(()) = interpreter.stack.push(U256::from_be_bytes(OP1)) else {
+            panic!()
+        };
+        let Ok(()) = interpreter.stack.push(U256::from_be_bytes(OP2)) else {
+            panic!()
+        };
+    }
 
     stack_ready();
 
