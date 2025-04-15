@@ -14,6 +14,7 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.cterm import CTerm, CSubst, cterm_build_claim
 from pyk.kast.inner import KApply, KVariable, KSort, Subst, KSequence
 from pyk.proof import APRProof, APRProver
+from pyk.proof.show import APRProofShow
 from pyk.utils import ensure_dir_path
 from .utils import TEST_DATA_DIR
 
@@ -294,7 +295,10 @@ def test_add(
             execute_depth=1,
         )
         prover.advance_proof(proof, max_iterations=49)
-    
+        proof_show = APRProofShow(sym_tools.kprove)
+        with open(TEST_DATA_DIR / 'proof-result.txt', 'w') as f:
+            f.write('\n'.join(proof_show.show(proof,[node.id for node in proof.kcfg.nodes])))
+            
     # When
     config = kriscv.run_elf(
         elf_file,
