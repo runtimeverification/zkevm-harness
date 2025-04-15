@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import itertools
-from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Final, cast
 
 import pytest
@@ -18,7 +17,7 @@ from kriscv.term_builder import (
     word,
 )
 from pyk.cterm import CSubst, CTerm, cterm_build_claim
-from pyk.kast.inner import KApply, KInner, KSequence, KSort, KVariable, Subst
+from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.kint import eqInt, intToken
 from pyk.prelude.ml import mlEqualsTrue
@@ -28,8 +27,11 @@ from pyk.proof.show import APRProofShow
 from .utils import DEBUG_DIR, SP1_CONFIG, _elf_file, build_elf, get_symbols, resolve_symbol
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from kriscv.symtools import SymTools
     from kriscv.tools import Tools
+    from pyk.kast.inner import KInner
 
     from .utils import BuildConfig, TemplateLoader
 
@@ -74,17 +76,17 @@ def sparse_symbolic_bytes(data: dict[int, bytes], symbolic_bytes: dict[int, tupl
     sparse_k = dot_sb()
     for addr, gap_or_val in sparse_data:
         if isinstance(gap_or_val, int):
-            for symaddr, symsize, symname in symbolic_bytes.items():
+            for symaddr, (symsize, _) in symbolic_bytes.items():
                 if addr <= symaddr < addr + gap_or_val:
                     assert symaddr + symsize <= addr + gap_or_val
-                    assert False, 'We do not support to make empty segments with partial symbolic bytes!'
+                    raise NotImplementedError('We do not support to make empty segments with partial symbolic bytes!')
             sparse_k = sb_empty_cons(sb_empty(intToken(gap_or_val)), sparse_k)
         elif isinstance(gap_or_val, bytes):
             curr_addr = addr
-            curr_bytes = None
-            for symaddr, symsize, symname in symbolic_bytes.items():
-                if addr <= symaddr < addr + gap_or_val:
-                    assert symaddr + symsize <= addr + gap_or_val
+            curr_bytes: KInner | None = None
+            for symaddr, (symsize, symname) in symbolic_bytes.items():
+                if addr <= symaddr < addr + len(gap_or_val):
+                    assert symaddr + symsize <= addr + len(gap_or_val)
                     # Extract bytes before the variable
                     if symaddr > curr_addr:
                         temp_bytes = bytesToken(gap_or_val[curr_addr - addr : symaddr - addr])
@@ -100,6 +102,7 @@ def sparse_symbolic_bytes(data: dict[int, bytes], symbolic_bytes: dict[int, tupl
             if curr_addr < addr + len(gap_or_val):
                 temp_bytes = bytesToken(gap_or_val[curr_addr - addr :])
                 curr_bytes = add_bytes(curr_bytes, temp_bytes) if curr_bytes else temp_bytes
+            assert curr_bytes is not None
             sparse_k = sb_bytes_cons(sb_bytes(curr_bytes), sparse_k)
         else:
             raise AssertionError()
@@ -121,13 +124,13 @@ def _init_config(
         '$HALT': halt_cond,
     }
 
-    constraints = [mlEqualsTrue(eqInt(length_bytes(var), intToken(size))) for size, var in symbolic_bytes.items()]
+    constraints = [mlEqualsTrue(eqInt(length_bytes(var), intToken(size))) for size, var in symbolic_bytes.values()]
     return CTerm(kriscv.init_config(config_vars), constraints)
 
 
 def _final_config(symtools: SymTools) -> CTerm:
     config = CTerm(symtools.kprove.definition.empty_config(KSort('GeneratedTopCell')))
-    _final_subst = {vname: KVariable('FINAL_' + vname) for vname in config.free_vars}
+    _final_subst: dict[str, KInner] = {vname: KVariable('FINAL_' + vname) for vname in config.free_vars}
     _final_subst['INSTRS_CELL'] = KSequence([KApply('#HALT_RISCV-TERMINATION_KItem'), KVariable('FINAL_INSTRS_CELL')])
     final_subst = CSubst(Subst(_final_subst))
     return final_subst(config)
