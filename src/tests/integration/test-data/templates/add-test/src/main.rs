@@ -8,6 +8,9 @@ use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
 
 #[unsafe(no_mangle)]
+static mut STATE: u8 = 0;
+
+#[unsafe(no_mangle)]
 static OPCODE: u8 = 0x01; // ADD
 
 #[unsafe(no_mangle)]
@@ -51,6 +54,8 @@ fn main() {
         STACK_ADDR = &interpreter.stack as *const _ as usize;
     }
 
+    stack_addr_ready();
+
     let Ok(()) = interpreter.stack.push(U256::from_be_bytes(OP1)) else {
         panic!()
     };
@@ -58,9 +63,13 @@ fn main() {
         panic!()
     };
 
+    stack_ready();
+
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
+
+    setup_done();
 
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
@@ -74,5 +83,29 @@ fn main() {
     };
     unsafe {
         RESULT = sum.to_be_bytes();
+    }
+}
+
+#[unsafe(no_mangle)]
+#[inline(never)]
+fn stack_addr_ready() -> () {
+    unsafe {
+        STATE = 1;
+    }
+}
+
+#[unsafe(no_mangle)]
+#[inline(never)]
+fn stack_ready() -> () {
+    unsafe {
+        STATE = 2;
+    }
+}
+
+#[unsafe(no_mangle)]
+#[inline(never)]
+fn setup_done() -> () {
+    unsafe {
+        STATE = 3;
     }
 }
