@@ -4,6 +4,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, NamedTuple
 
+from pyk.utils import run_process_2
+
 if TYPE_CHECKING:
     from typing import Final
 
@@ -13,6 +15,7 @@ if TYPE_CHECKING:
 TEST_DATA_DIR: Final = (Path(__file__).parent / 'test-data').resolve(strict=True)
 DEPS_DIR: Final = (Path(__file__).parents[3] / 'deps').resolve(strict=True)
 TEMPLATE_DIR: Final = TEST_DATA_DIR / 'templates'
+DEBUG_DIR: Final = TEST_DATA_DIR / 'debug'
 
 RISC0_VERSION: Final = (DEPS_DIR / 'risc0_release').read_text().rstrip()
 SP1_VERSION: Final = (DEPS_DIR / 'sp1_release').read_text().rstrip()
@@ -135,3 +138,30 @@ def _elf_file(file: Path) -> Iterator[ELFFile]:
     with file.open('rb') as f:
         elf = ELFFile(f)
         yield elf
+
+
+def build_elf(project_name: str, load_template: TemplateLoader, build_config: BuildConfig) -> Path:
+    """
+    Load the template from `templates/project_name` and build the ELF file according to the build configuration.
+
+    Args:
+        project_name: The name of the project to build.
+        load_template: The template loader to use.
+        build_config: The build configuration to use.
+
+    Returns:
+        The path to the ELF file.
+    """
+    project_dir = load_template(
+        template_name=project_name,
+        context={
+            'zkvm_deps': build_config.zkvm_deps,
+            'src_header': build_config.src_header,
+        },
+    )
+
+    run_process_2(build_config.build_cmd, cwd=project_dir)
+    elf_file = project_dir / build_config.elf_path / project_name
+
+    assert elf_file.is_file()
+    return elf_file
