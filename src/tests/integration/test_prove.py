@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import itertools
-from typing import TYPE_CHECKING, Callable, Final, cast
+from typing import TYPE_CHECKING, Final, cast
+from collections.abc import Callable
 
 import pytest
 from kriscv.elf_parser import _memory_segments, entry_point, read_unique_symbol
