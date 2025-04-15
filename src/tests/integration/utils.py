@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
+
+from pyk.utils import run_process_2
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from typing import Final
 
     from elftools.elf.elffile import ELFFile  # type: ignore
@@ -135,3 +138,28 @@ def _elf_file(file: Path) -> Iterator[ELFFile]:
     with file.open('rb') as f:
         elf = ELFFile(f)
         yield elf
+
+
+def build_elf(project_name: str, load_template: TemplateLoader, build_config: BuildConfig) -> Path:
+    """
+    Load the template from `templates/project_name` and build the ELF file according to the build configuration.
+    Args:
+        project_name: The name of the project to build.
+        load_template: The template loader to use.
+        build_config: The build configuration to use.
+    Returns:
+        The path to the ELF file.
+    """
+    project_dir = load_template(
+        template_name=project_name,
+        context={
+            'zkvm_deps': build_config.zkvm_deps,
+            'src_header': build_config.src_header,
+        },
+    )
+
+    run_process_2(build_config.build_cmd, cwd=project_dir)
+    elf_file = project_dir / build_config.elf_path / project_name
+
+    assert elf_file.is_file()
+    return elf_file

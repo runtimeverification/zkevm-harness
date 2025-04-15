@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import pytest
 from kriscv.tools import Tools
@@ -8,6 +8,7 @@ from kriscv.tools import Tools
 from .utils import TemplateLoader
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
 
