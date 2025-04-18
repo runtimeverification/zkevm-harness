@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+from kriscv.symtools import SymTools
 from kriscv.tools import Tools
 
 from .utils import TemplateLoader
@@ -29,3 +30,8 @@ def tools(tmp_path: Path) -> Callable[[str], Tools]:
         return Tools(definition_dir, temp_dir=temp_dir)
 
     return _tools
+
+
+@pytest.fixture
+def symtools(tmp_path: Path) -> SymTools:
+    return SymTools.default(proof_dir=tmp_path)
