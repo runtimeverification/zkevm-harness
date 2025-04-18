@@ -33,17 +33,5 @@ def tools(tmp_path: Path) -> Callable[[str], Tools]:
 
 
 @pytest.fixture
-def symtools(tmp_path: Path) -> Callable[[str, str, str], SymTools]:
-    def _symtools(haskell_target: str, llvm_target: str, source_dir: str) -> SymTools:
-        temp_dir = tmp_path / 'proofs'
-        temp_dir.mkdir(exist_ok=True)
-
-        return SymTools(
-            haskell_dir=kdist.get(haskell_target),
-            llvm_lib_dir=kdist.get(llvm_target),
-            source_dirs=(kdist.get(source_dir),),
-            proof_dir=temp_dir,
-            bug_report=None,
-        )
-
-    return _symtools
+def symtools(tmp_path: Path) -> SymTools:
+    return SymTools.default(proof_dir=tmp_path)
