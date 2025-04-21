@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Final
 
 import kriscv.term_builder as tb
 import pytest
 from kriscv.elf_parser import _memory_segments, entry_point, read_unique_symbol
+from kriscv.sparse_bytes import SparseBytes, SymBytes
 from pyk.cterm import CSubst, CTerm, cterm_build_claim
 from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
 from pyk.proof.reachability import APRProof, APRProver
 from pyk.proof.show import APRProofShow
 
-from .utils import DEBUG_DIR, SP1_CONFIG, _elf_file, build_elf, get_symbols, resolve_symbol
+from .utils import SP1_CONFIG, TEST_DATA_DIR, _elf_file, build_elf, get_symbols, resolve_symbol
+
+DEBUG_DIR: Final = TEST_DATA_DIR / 'debug'
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from kriscv.symtools import SymTools
@@ -34,18 +37,20 @@ def _init_config(
     # 4. continue the symbolic execution until the new halt condition is reached.
 
     data = _memory_segments(elf_file)
-    sparse_bytes = tb.sparse_bytes(data, symdata)
+    tmp = {addr: SymBytes(KVariable(var), size) for addr, (size, var) in symdata.items()}
+    sparse_bytes = SparseBytes.from_data(data, tmp)
+    mem, constraints = sparse_bytes.to_k()
     (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
     with _elf_file(elf_file) as elf:
         end_addr = read_unique_symbol(elf, end_symbol, error_loc=str(elf_file))
         halt_cond = tb.halt_at_address(tb.word(end_addr))
     config_vars = {
         '$REGS': tb.regs(dict.fromkeys(range(32), 0)),
-        '$MEM': sparse_bytes,
+        '$MEM': mem,
         '$PC': entry_point(elf_file),
         '$HALT': halt_cond,
     }
-    return CTerm(kriscv.init_config(config_vars), tb.sparse_bytes_constraints(symdata))
+    return CTerm(kriscv.init_config(config_vars), constraints)
 
 
 def _final_config(symtools: SymTools) -> CTerm:
@@ -90,8 +95,9 @@ def test_prove_equivalence(
         )
         prover.advance_proof(proof, max_iterations=MAX_ITERATIONS)
         proof_show = APRProofShow(symtools.kprove)
-        with open(DEBUG_DIR / 'proof-result.txt', 'w') as f:
-            f.write('\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes])))
+        DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+        show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
+        (DEBUG_DIR / 'proof-result.txt').write_text(show_result)
 
     # Then
     # Given the `REVM` in the riscv memory as `S_{REVM}`, and the `KEVM` state as `S_{KEVM}`
