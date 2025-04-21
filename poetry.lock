@@ -970,10 +970,8 @@ riscv-assembler = "^1.2.1"
 types-pyyaml = "^6.0.12.20240311"
 
 [package.source]
-type = "git"
-url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "symbolic-bytes-constraints"
-resolved_reference = "52190fba4ee17e5354d1ca1e171a9ede0803e3dd"
+type = "directory"
+url = "../riscv-semantics"
 
 [[package]]
 name = "linkify-it-py"
@@ -2181,4 +2179,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "ebec65994ba515d2261b0248b4b64b76498839d6b28dfa0d71825f49edba1dbb"
+content-hash = "2a30307747f3e8f5eb7bf42344fb36c85850a3e7e48a08ca517d37551d0b2668"
