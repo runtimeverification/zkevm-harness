@@ -985,14 +985,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.236"
+version = "7.1.245"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.236-py3-none-any.whl", hash = "sha256:4d548a6fe7303f991540c902735622c3a79537534e642a8d402acab4371f9138"},
-    {file = "kframework-7.1.236.tar.gz", hash = "sha256:1625434c48a8e6fa4fd56202238b4b891a6eb2fe849848b036d086bcfdd87d1c"},
+    {file = "kframework-7.1.245-py3-none-any.whl", hash = "sha256:eb2169ab027c454cc64c5c0838129f88d82b86c06697a2d17e5752ed2c720dae"},
+    {file = "kframework-7.1.245.tar.gz", hash = "sha256:08e4ef66d48086a59a9d1e8dd1a83211425969fe1947c13ba15c53e869b4d481"},
 ]
 
 [package.dependencies]
@@ -1012,7 +1012,7 @@ xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "kriscv"
-version = "0.1.63"
+version = "0.1.64"
 description = "K tooling for the RISC-V architecture"
 optional = false
 python-versions = "^3.10"
@@ -1022,7 +1022,7 @@ develop = false
 
 [package.dependencies]
 filelock = "^3.14.0"
-kframework = "7.1.236"
+kframework = "7.1.245"
 pyelftools = "^0.26"
 pyyaml = "^6.0.1"
 riscof = "^1.25.3"
@@ -1032,8 +1032,8 @@ types-pyyaml = "^6.0.12.20240311"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "v0.1.63"
-resolved_reference = "8f5e5b70b6a1f0e9d63caff09f336fcb8ceadbd9"
+reference = "v0.1.64"
+resolved_reference = "951e6e79d58afb64678c2c6b174dd956335ef446"
 
 [[package]]
 name = "linkify-it-py"
@@ -1345,14 +1345,14 @@ test = ["Faker (>=1.0.8)", "allpairspy (>=2)", "click (>=6.2)", "pytest (>=6.0.1
 
 [[package]]
 name = "pep8-naming"
-version = "0.14.1"
+version = "0.15.0"
 description = "Check PEP-8 naming conventions, plugin for flake8"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pep8-naming-0.14.1.tar.gz", hash = "sha256:1ef228ae80875557eb6c1549deafed4dabbf3261cfcafa12f773fe0db9be8a36"},
-    {file = "pep8_naming-0.14.1-py3-none-any.whl", hash = "sha256:63f514fc777d715f935faf185dedd679ab99526a7f2f503abb61587877f7b1c5"},
+    {file = "pep8_naming-0.15.0-py3-none-any.whl", hash = "sha256:2ce36937ff0421d871a634f4a0c2af06f994fe22c9055ea9813ca72d562754da"},
+    {file = "pep8_naming-0.15.0.tar.gz", hash = "sha256:a637ee5144f7585c800b1fc6eeb996fa35a2ef0f2690880a9e1b29cb9f6e8359"},
 ]
 
 [package.dependencies]
@@ -2264,4 +2264,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "9dbdf0c75a85f1c0221b3f2fef5d49adc14b3b19d7704b9c5845f62c37f9a7e3"
+content-hash = "221de852ecd5aba6014947128ad4aaec5661bd1fc7c1de66342dec2b84d44e44"
