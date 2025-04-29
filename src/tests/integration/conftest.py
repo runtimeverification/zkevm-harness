@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -11,27 +12,47 @@ from .utils import TemplateLoader
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
+
+    from pytest import Parser
+
+
+def pytest_addoption(parser: Parser) -> None:
+    parser.addoption(
+        '--temp-dir',
+        type=Path,
+        help='Directory to save temporary files',
+    )
 
 
 @pytest.fixture
-def load_template(tmp_path: Path) -> TemplateLoader:
-    return TemplateLoader(tmp_path)
+def custom_temp_dir(request: pytest.FixtureRequest) -> Path:
+    """Return a custom temporary directory if specified, otherwise use pytest's default tmp_path."""
+    temp_dir = request.config.getoption('--temp-dir')
+    if temp_dir is not None:
+        assert isinstance(temp_dir, Path)
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        return temp_dir
+    return request.getfixturevalue('tmp_path')
 
 
 @pytest.fixture
-def tools(tmp_path: Path) -> Callable[[str], Tools]:
+def load_template(custom_temp_dir: Path) -> TemplateLoader:
+    return TemplateLoader(custom_temp_dir)
+
+
+@pytest.fixture
+def tools(custom_temp_dir: Path) -> Callable[[str], Tools]:
     def _tools(target: str) -> Tools:
 
         definition_dir = kdist.get(target)
 
-        temp_dir = tmp_path / 'kriscv'
-        temp_dir.mkdir(exist_ok=True)
+        temp_dir = custom_temp_dir / 'kriscv'
+        temp_dir.mkdir()
         return Tools(definition_dir, temp_dir=temp_dir)
 
     return _tools
 
 
 @pytest.fixture
-def symtools(tmp_path: Path) -> SymTools:
-    return SymTools.default(proof_dir=tmp_path)
+def symtools(custom_temp_dir: Path) -> SymTools:
+    return SymTools.default(proof_dir=custom_temp_dir)
