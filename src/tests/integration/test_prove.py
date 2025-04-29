@@ -9,7 +9,6 @@ from kriscv.sparse_bytes import SparseBytes, SymBytes
 from pyk.cterm import CSubst, CTerm, cterm_build_claim
 from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
 from pyk.proof.reachability import APRProof, APRProver
-from pyk.proof.show import APRProofShow
 
 from .utils import SP1_CONFIG, TEST_DATA_DIR, _elf_file, build_elf, get_symbols, resolve_symbol
 
@@ -62,7 +61,7 @@ def _final_config(symtools: SymTools) -> CTerm:
 
 
 PROVE_TEST_DATA: Final = (('add-test', 2, SP1_CONFIG),)
-DEPTH: Final = 1
+DEPTH: Final = 1000
 MAX_ITERATIONS: Final = 45
 
 
@@ -94,13 +93,6 @@ def test_prove_equivalence(
             execute_depth=DEPTH,
         )
         prover.advance_proof(proof, max_iterations=MAX_ITERATIONS)
-        proof_show = APRProofShow(symtools.kprove)
-        DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-        show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
-        (DEBUG_DIR / 'proof-result.txt').write_text(show_result)
 
-    # Then
-    # Given the `REVM` in the riscv memory as `S_{REVM}`, and the `KEVM` state as `S_{KEVM}`
-    # Define a relation `R(S_{REVM}, S_{KEVM})`
-    # Prove that `R(S_{REVM}, S_{KEVM})` is valid for their initial state and final state.
-    # That is `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)` refinement verification through forward simulation.
+    # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
+    # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
