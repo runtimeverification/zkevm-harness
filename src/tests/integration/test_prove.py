@@ -9,6 +9,7 @@ from kriscv.sparse_bytes import SparseBytes, SymBytes
 from pyk.cterm import CSubst, CTerm, cterm_build_claim
 from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
 from pyk.proof.reachability import APRProof, APRProver
+from pyk.proof.show import APRProofShow
 
 from .utils import SP1_CONFIG, _elf_file, build_elf, get_symbols, resolve_symbol
 
@@ -69,6 +70,7 @@ MAX_ITERATIONS: Final = 45
     ids=[test_id for test_id, *_ in PROVE_TEST_DATA],
 )
 def test_prove_equivalence(
+    custom_temp_dir: Path,
     symtools: Callable[[str, str, str], SymTools],
     tools: Callable[[str], Tools],
     load_template: TemplateLoader,
@@ -81,20 +83,26 @@ def test_prove_equivalence(
 
     # Given
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
-    elf_file = build_elf(test_id, load_template, build_config)
-    symdata = {resolve_symbol(elf_file, f'OP{i}'): (32, f'W{i}') for i in range(arg_count)}
-
-    init_config = _init_config(symdata, build_config, elf_file, tools(build_config.target))
-    kclaim = cterm_build_claim(test_id.upper(), init_config, _final_config(symtool))
-    proof = APRProof.from_claim(symtool.kprove.definition, kclaim[0], {}, symtool.proof_dir)
+    if APRProof.proof_data_exists(test_id.upper(), symtool.proof_dir):
+        proof = APRProof.read_proof_data(proof_dir=symtool.proof_dir, id=test_id.upper())
+    else:
+        elf_file = build_elf(test_id, load_template, build_config)
+        symdata = {resolve_symbol(elf_file, f'OP{i}'): (32, f'W{i}') for i in range(arg_count)}
+        init_config = _init_config(symdata, build_config, elf_file, tools(build_config.target))
+        kclaim = cterm_build_claim(test_id.upper(), init_config, _final_config(symtool))
+        proof = APRProof.from_claim(symtool.kprove.definition, kclaim[0], {}, symtool.proof_dir)
 
     # When
-    with symtool.explore(id='ADD') as kcfg_explore:
+    with symtool.explore(id=test_id.upper()) as kcfg_explore:
         prover = APRProver(
             kcfg_explore=kcfg_explore,
             execute_depth=DEPTH,
         )
         prover.advance_proof(proof, max_iterations=MAX_ITERATIONS)
+
+    proof_show = APRProofShow(symtool.kprove)
+    show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
+    (symtool.proof_dir / f'{test_id.upper()}-proof-result.txt').write_text(show_result)
 
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
