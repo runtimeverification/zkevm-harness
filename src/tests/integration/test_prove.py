@@ -35,21 +35,21 @@ def _init_config(
     # 3. set a new halt condition
     # 4. continue the symbolic execution until the new halt condition is reached.
 
-    data = _memory_segments(elf_file)
     tmp = {addr: SymBytes(KVariable(var), size) for addr, (size, var) in symdata.items()}
-    sparse_bytes = SparseBytes.from_data(data, tmp)
-    mem, constraints = sparse_bytes.to_k()
-    (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
     with _elf_file(elf_file) as elf:
+        data = _memory_segments(elf)
+        sparse_bytes = SparseBytes.from_data(data, tmp)
+        mem, constraints = sparse_bytes.to_k()
+        (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
         end_addr = read_unique_symbol(elf, end_symbol, error_loc=str(elf_file))
         halt_cond = tb.halt_at_address(tb.word(end_addr))
-    config_vars = {
-        '$REGS': tb.regs(dict.fromkeys(range(32), 0)),
-        '$MEM': mem,
-        '$PC': entry_point(elf_file),
-        '$HALT': halt_cond,
-    }
-    return CTerm(kriscv.init_config(config_vars), constraints)
+        config_vars = {
+            '$REGS': tb.regs(dict.fromkeys(range(32), 0)),
+            '$MEM': mem,
+            '$PC': entry_point(elf),
+            '$HALT': halt_cond,
+        }
+        return CTerm(kriscv.init_config(config_vars), constraints)
 
 
 def _final_config(symtools: SymTools) -> CTerm:
