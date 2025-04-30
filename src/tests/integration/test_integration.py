@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, get_symbols, resolve_symbol
+from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, get_memory, get_symbols, resolve_symbol
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Final
 
     from kriscv.tools import Tools
-    from pyk.kast import KInner
 
     from .utils import BuildConfig, TemplateLoader
 
@@ -76,16 +75,3 @@ def test_sstore(
 
     # Then
     assert get_memory(kriscv, config, result_addr, 32) == b'\x00' * 28 + b'\xde\xad\xbe\xef'
-
-
-def get_memory(kriscv: Tools, config: KInner, addr: int, size: int) -> bytes:
-    memory = kriscv.get_memory(config)
-
-    def read(addr: int) -> bytes:
-        b = memory.get(addr)
-        if b is None:
-            raise ValueError(f'Uninitialized address: {addr}')
-        assert 0 <= b < 256
-        return bytes([b])
-
-    return b''.join(read(i) for i in range(addr, addr + size))
