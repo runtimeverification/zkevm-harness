@@ -15,25 +15,29 @@ if TYPE_CHECKING:
     from .utils import BuildConfig, TemplateLoader
 
 
-ADD_TEST_DATA: Final = (
-    ('risc0', RISC0_CONFIG),
-    ('sp1', SP1_CONFIG),
+CONCRETE_TEST_DATA: Final = (
+    ('risc0-add', 'add-test', RISC0_CONFIG, b'\x00' * 31 + b'\x03'),
+    ('sp1-add', 'add-test', SP1_CONFIG, b'\x00' * 31 + b'\x03'),
+    ('risc0-sstore', 'sstore-test', RISC0_CONFIG, b'\x00' * 28 + b'\xde\xad\xbe\xef'),
+    ('sp1-sstore', 'sstore-test', SP1_CONFIG, b'\x00' * 28 + b'\xde\xad\xbe\xef'),
 )
 
 
 @pytest.mark.parametrize(
-    'test_id,build_config',
-    ADD_TEST_DATA,
-    ids=[test_id for test_id, *_ in ADD_TEST_DATA],
+    'test_id,project_name,build_config,expected',
+    CONCRETE_TEST_DATA,
+    ids=[test_id for test_id, *_ in CONCRETE_TEST_DATA],
 )
-def test_add(
+def test_concrete(
     tools: Callable[[str], Tools],
     load_template: TemplateLoader,
     test_id: str,
+    project_name: str,
     build_config: BuildConfig,
+    expected: bytes,
 ) -> None:
     # Given
-    elf_file = build_elf('add-test', load_template, build_config)
+    elf_file = build_elf(project_name, load_template, build_config)
     result_addr = resolve_symbol(elf_file, 'RESULT')
     (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
     kriscv = tools(build_config.target)
@@ -44,34 +48,7 @@ def test_add(
         regs=dict.fromkeys(range(32), 0),
         end_symbol=end_symbol,
     )
+    actual = get_memory(kriscv, config, result_addr, 32)
 
     # Then
-    assert get_memory(kriscv, config, result_addr, 32) == b'\x00' * 31 + b'\x03'
-
-
-@pytest.mark.parametrize(
-    'test_id,build_config',
-    ADD_TEST_DATA,
-    ids=[test_id for test_id, *_ in ADD_TEST_DATA],
-)
-def test_sstore(
-    tools: Callable[[str], Tools],
-    load_template: TemplateLoader,
-    test_id: str,
-    build_config: BuildConfig,
-) -> None:
-    # Given
-    elf_file = build_elf('sstore-test', load_template, build_config)
-    result_addr = resolve_symbol(elf_file, 'RESULT')
-    (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
-    kriscv = tools(build_config.target)
-
-    # When
-    config = kriscv.run_elf(
-        elf_file,
-        regs=dict.fromkeys(range(32), 0),
-        end_symbol=end_symbol,
-    )
-
-    # Then
-    assert get_memory(kriscv, config, result_addr, 32) == b'\x00' * 28 + b'\xde\xad\xbe\xef'
+    assert expected == actual
