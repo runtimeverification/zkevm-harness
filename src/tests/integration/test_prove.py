@@ -10,9 +10,7 @@ from pyk.cterm import CSubst, CTerm, cterm_build_claim
 from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
 from pyk.proof.reachability import APRProof, APRProver
 
-from .utils import SP1_CONFIG, TEST_DATA_DIR, _elf_file, build_elf, get_symbols, resolve_symbol
-
-DEBUG_DIR: Final = TEST_DATA_DIR / 'debug'
+from .utils import SP1_CONFIG, _elf_file, build_elf, get_symbols, resolve_symbol
 
 if TYPE_CHECKING:
     from collections.abc import Callable
