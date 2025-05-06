@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import k_version
 from pyk.kdist.api import Target
-from pyk.ktool.kompile import PykBackend, kompile
+from pyk.ktool.kompile import LLVMKompileType, PykBackend, kompile
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -56,10 +56,52 @@ __TARGETS__: Final = {
             'warnings_to_errors': True,
         },
     ),
+    'risc0-lib': KompileTarget(
+        lambda src_dir: {
+            'main_file': src_dir / 'zkevm-semantics/risc0.k',
+            'backend': PykBackend.LLVM,
+            'include_dirs': [src_dir],
+            'syntax_module': 'RISCV',
+            'llvm_kompile_type': LLVMKompileType.C,
+            'md_selector': 'k',
+            'warnings_to_errors': True,
+        },
+    ),
+    'risc0-haskell': KompileTarget(
+        lambda src_dir: {
+            'main_file': src_dir / 'zkevm-semantics/risc0.k',
+            'backend': PykBackend.HASKELL,
+            'include_dirs': [src_dir],
+            'syntax_module': 'RISCV',
+            'md_selector': 'k',
+            'warnings_to_errors': True,
+        },
+    ),
     'sp1': KompileTarget(
         lambda src_dir: {
             'main_file': src_dir / 'zkevm-semantics/sp1.k',
             'backend': PykBackend.LLVM,
+            'include_dirs': [src_dir],
+            'syntax_module': 'RISCV',
+            'md_selector': 'k',
+            'warnings_to_errors': True,
+        },
+    ),
+    'sp1-lib': KompileTarget(
+        lambda src_dir: {
+            'main_file': src_dir / 'zkevm-semantics/sp1.k',
+            'backend': PykBackend.LLVM,
+            'include_dirs': [src_dir],
+            'syntax_module': 'RISCV',
+            'llvm_kompile_type': LLVMKompileType.C,
+            'md_selector': 'k',
+            'warnings_to_errors': True,
+        },
+    ),
+    'sp1-haskell': KompileTarget(
+        lambda src_dir: {
+            'main_file': src_dir / 'zkevm-semantics/sp1.k',
+            'backend': PykBackend.HASKELL,
             'include_dirs': [src_dir],
             'syntax_module': 'RISCV',
             'md_selector': 'k',
