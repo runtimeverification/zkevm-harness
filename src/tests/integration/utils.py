@@ -11,6 +11,8 @@ if TYPE_CHECKING:
     from typing import Final
 
     from elftools.elf.elffile import ELFFile  # type: ignore
+    from kriscv.tools import Tools
+    from pyk.kast import KInner
 
 
 TEST_DATA_DIR: Final = (Path(__file__).parent / 'test-data').resolve(strict=True)
@@ -106,6 +108,19 @@ SP1_CONFIG: Final = BuildConfig(
     end_pattern='_ZN8sp1_zkvm8syscalls4halt12syscall_halt*',
     target='zkevm-semantics.sp1',
 )
+
+
+def get_memory(kriscv: Tools, config: KInner, addr: int, size: int) -> bytes:
+    memory = kriscv.get_memory(config)
+
+    def read(addr: int) -> bytes:
+        b = memory.get(addr)
+        if b is None:
+            raise ValueError(f'Uninitialized address: {addr}')
+        assert 0 <= b < 256
+        return bytes([b])
+
+    return b''.join(read(i) for i in range(addr, addr + size))
 
 
 def resolve_symbol(elf_file: Path, symbol: str) -> int:
