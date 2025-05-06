@@ -84,7 +84,7 @@ def test_prove_equivalence(
     # Given
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
     elf_file = build_elf(test_id, load_template, build_config)
-    symdata = {resolve_symbol(elf_file, f'OP{i}'): (32, f'W{i}') for i in range(0, arg_count)}
+    symdata = {resolve_symbol(elf_file, f'OP{i}'): (32, f'W{i}') for i in range(arg_count)}
 
     init_config = _init_config(symdata, build_config, elf_file, tools(build_config.target))
     kclaim = cterm_build_claim(test_id.upper(), init_config, _final_config(symtool))
