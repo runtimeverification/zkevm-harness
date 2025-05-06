@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from kriscv.symtools import SymTools
 from kriscv.tools import Tools
+from pyk.cli.utils import bug_report_arg
 from pyk.kdist import kdist
 
 from .utils import TemplateLoader
@@ -54,5 +55,19 @@ def tools(custom_temp_dir: Path) -> Callable[[str], Tools]:
 
 
 @pytest.fixture
-def symtools(custom_temp_dir: Path) -> SymTools:
-    return SymTools.default(proof_dir=custom_temp_dir)
+def symtools(custom_temp_dir: Path) -> Callable[[str, str, str], SymTools]:
+    def _symtools(haskell_target: str, llvm_target: str, source_dir: str) -> SymTools:
+        temp_dir = custom_temp_dir / 'proofs'
+        debug_dir = custom_temp_dir / 'debug'
+        temp_dir.mkdir(exist_ok=True)
+        debug_dir.mkdir(exist_ok=True)
+
+        return SymTools(
+            haskell_dir=kdist.get(haskell_target),
+            llvm_lib_dir=kdist.get(llvm_target),
+            source_dirs=(kdist.get(source_dir),),
+            proof_dir=temp_dir,
+            bug_report=bug_report_arg(debug_dir),
+        )
+
+    return _symtools
