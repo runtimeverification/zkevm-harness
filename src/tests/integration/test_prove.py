@@ -71,7 +71,7 @@ MAX_ITERATIONS: Final = 45
     ids=[test_id for test_id, *_ in PROVE_TEST_DATA],
 )
 def test_prove_equivalence(
-    symtools: SymTools,
+    symtools: Callable[[str, str, str], SymTools],
     tools: Callable[[str], Tools],
     load_template: TemplateLoader,
     test_id: str,
@@ -82,15 +82,16 @@ def test_prove_equivalence(
         pytest.skip(f'Skipping {test_id} because we are still working on it')
 
     # Given
+    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
     elf_file = build_elf(test_id, load_template, build_config)
     symdata = {resolve_symbol(elf_file, f'OP{i}'): (32, f'W{i}') for i in range(0, arg_count)}
 
     init_config = _init_config(symdata, build_config, elf_file, tools(build_config.target))
-    kclaim = cterm_build_claim(test_id.upper(), init_config, _final_config(symtools))
-    proof = APRProof.from_claim(symtools.kprove.definition, kclaim[0], {}, symtools.proof_dir)
+    kclaim = cterm_build_claim(test_id.upper(), init_config, _final_config(symtool))
+    proof = APRProof.from_claim(symtool.kprove.definition, kclaim[0], {}, symtool.proof_dir)
 
     # When
-    with symtools.explore(id='ADD') as kcfg_explore:
+    with symtool.explore(id='ADD') as kcfg_explore:
         prover = APRProver(
             kcfg_explore=kcfg_explore,
             execute_depth=DEPTH,

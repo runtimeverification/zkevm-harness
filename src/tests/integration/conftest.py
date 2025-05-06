@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from kriscv.symtools import SymTools
 from kriscv.tools import Tools
+from pyk.kdist import kdist
 
 from .utils import TemplateLoader
 
@@ -21,17 +22,28 @@ def load_template(tmp_path: Path) -> TemplateLoader:
 @pytest.fixture
 def tools(tmp_path: Path) -> Callable[[str], Tools]:
     def _tools(target: str) -> Tools:
-        from pyk.kdist import kdist
 
         definition_dir = kdist.get(target)
 
         temp_dir = tmp_path / 'kriscv'
-        temp_dir.mkdir()
+        temp_dir.mkdir(exist_ok=True)
         return Tools(definition_dir, temp_dir=temp_dir)
 
     return _tools
 
 
 @pytest.fixture
-def symtools(tmp_path: Path) -> SymTools:
-    return SymTools.default(proof_dir=tmp_path)
+def symtools(tmp_path: Path) -> Callable[[str, str, str], SymTools]:
+    def _symtools(haskell_target: str, llvm_target: str, source_dir: str) -> SymTools:
+        temp_dir = tmp_path / 'proofs'
+        temp_dir.mkdir(exist_ok=True)
+
+        return SymTools(
+            haskell_dir=kdist.get(haskell_target),
+            llvm_lib_dir=kdist.get(llvm_target),
+            source_dirs=(kdist.get(source_dir),),
+            proof_dir=temp_dir,
+            bug_report=None,
+        )
+
+    return _symtools
