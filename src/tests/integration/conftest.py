@@ -48,7 +48,7 @@ def tools(custom_temp_dir: Path) -> Callable[[str], Tools]:
         definition_dir = kdist.get(target)
 
         temp_dir = custom_temp_dir / 'kriscv'
-        temp_dir.mkdir()
+        temp_dir.mkdir(exist_ok=True)
         return Tools(definition_dir, temp_dir=temp_dir)
 
     return _tools
