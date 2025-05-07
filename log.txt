@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0 -- /Users/steven/Library/Caches/pypoetry/virtualenvs/zkevm-harness-v6gyuLz3-py3.13/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/steven/Desktop/projs/zkevm-harness/.hypothesis/examples'))
+rootdir: /Users/steven/Desktop/projs/zkevm-harness
+configfile: pyproject.toml
+plugins: hypothesis-6.131.9, kframework-7.1.249, mock-3.14.0, cov-6.1.1, xdist-3.6.1
+collecting ... collected 1 item
+
+src/tests/integration/test_prove.py::test_prove_equivalence[add-test] PASSED
+
+======================== 1 passed in 1630.74s (0:27:10) ========================

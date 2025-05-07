@@ -60,8 +60,8 @@ def _final_config(symtools: SymTools) -> CTerm:
 
 
 PROVE_TEST_DATA: Final = (('add-test', 2, SP1_CONFIG),)
-DEPTH: Final = 1000
-MAX_ITERATIONS: Final = 45
+DEPTH: Final = 9000
+MAX_ITERATIONS: Final = 1
 
 
 @pytest.mark.parametrize(
@@ -78,8 +78,8 @@ def test_prove_equivalence(
     arg_count: int,
     build_config: BuildConfig,
 ) -> None:
-    if test_id in ['add-test']:
-        pytest.skip(f'Skipping {test_id} because we are still working on it')
+    # if test_id in ['add-test']:
+    #     pytest.skip(f'Skipping {test_id} because we are still working on it')
 
     # Given
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')

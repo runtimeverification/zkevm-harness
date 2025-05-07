@@ -1,0 +1,10 @@
+/Users/steven/Desktop/projs/zkevm-harness/debug/add-test/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/deps/libsp1_primitives-4b10cea52b34fc81.rmeta: /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/lib.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/consts.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/io.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/types.rs
+
+/Users/steven/Desktop/projs/zkevm-harness/debug/add-test/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/deps/libsp1_primitives-4b10cea52b34fc81.rlib: /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/lib.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/consts.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/io.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/types.rs
+
+/Users/steven/Desktop/projs/zkevm-harness/debug/add-test/target/elf-compilation/riscv32im-succinct-zkvm-elf/release/deps/sp1_primitives-4b10cea52b34fc81.d: /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/lib.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/consts.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/io.rs /Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/types.rs
+
+/Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/lib.rs:
+/Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/consts.rs:
+/Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/io.rs:
+/Users/steven/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp1-primitives-4.2.0/src/types.rs:
