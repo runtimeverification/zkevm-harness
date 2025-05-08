@@ -25,10 +25,7 @@ poetry-env-list:
 
 .PHONY: poetry-clear
 poetry-clear:
-	@for env in $$($(POETRY) env list | grep "zkevm-harness" | awk '{print $$1}'); do \
-		echo "Removing environment: $$env"; \
-		$(POETRY) env remove $$env; \
-	done
+	$(POETRY) env remove --all
 
 
 # Kompilation
