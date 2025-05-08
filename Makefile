@@ -25,7 +25,7 @@ poetry-install:
 kdist: kdist-build
 
 kdist-build: poetry-install
-	$(POETRY_RUN) kdist --verbose build -j2 'zkevm-semantics.*'
+	$(POETRY_RUN) kdist --verbose build -j4 'zkevm-semantics.*'
 
 kdist-clean: poetry-install
 	$(POETRY_RUN) kdist clean
