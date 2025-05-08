@@ -952,7 +952,7 @@ xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "kriscv"
-version = "0.1.69"
+version = "0.1.70"
 description = "K tooling for the RISC-V architecture"
 optional = false
 python-versions = "^3.10"
@@ -972,8 +972,8 @@ types-pyyaml = "^6.0.12.20240311"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "v0.1.69"
-resolved_reference = "3a2bbc09ca589968fe65ddad54108c23316eae12"
+reference = "v0.1.70"
+resolved_reference = "ec95dd659a58c1c9c7912008b70c19bd31224e3f"
 
 [[package]]
 name = "linkify-it-py"
@@ -2181,4 +2181,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "ad69d918868771a2e5b89804ecc9bb89d63507a1f88cce7e6af56159c39afd6e"
+content-hash = "b5e5c242867253e074bf5c0a2167c54ed5e9c4bebf53db4d6b328f988d77657c"
