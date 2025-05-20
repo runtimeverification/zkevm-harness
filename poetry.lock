@@ -929,14 +929,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.249"
+version = "7.1.256"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.249-py3-none-any.whl", hash = "sha256:690775876a0b88c04947e1e3b2e69648a1852e025138a22c663004ef632cff07"},
-    {file = "kframework-7.1.249.tar.gz", hash = "sha256:9799184daf5127e48463f3aa69ce4043858f9a284aacb43c21cddcfee4bbd168"},
+    {file = "kframework-7.1.256-py3-none-any.whl", hash = "sha256:1a072ae190fd0edd06c629cae9408d4e222c7728d3ca4686b6baf1b364da8202"},
+    {file = "kframework-7.1.256.tar.gz", hash = "sha256:11f75b1f21e7fdb1a045c9657a3602715f5808c098d2f1b9e8a91e7a5f4a25a2"},
 ]
 
 [package.dependencies]
@@ -955,7 +955,7 @@ xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "kriscv"
-version = "0.1.78"
+version = "0.1.79"
 description = "K tooling for the RISC-V architecture"
 optional = false
 python-versions = "^3.10"
@@ -965,18 +965,17 @@ develop = false
 
 [package.dependencies]
 filelock = "^3.14.0"
-kframework = "7.1.249"
+kframework = "7.1.256"
 pyelftools = "^0.26"
 pyyaml = "^6.0.1"
 riscof = "^1.25.3"
 riscv-assembler = "^1.2.1"
-types-pyyaml = "^6.0.12.20240311"
 
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "v0.1.78"
-resolved_reference = "66ddeca9b5a3260b18bdb119c72385b15c85523d"
+reference = "v0.1.79"
+resolved_reference = "81d57236c9ae14da8b2964c66980f6afebfb23fe"
 
 [[package]]
 name = "linkify-it-py"
@@ -1880,14 +1879,14 @@ files = [
 
 [[package]]
 name = "setuptools"
-version = "80.7.1"
+version = "80.8.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "setuptools-80.7.1-py3-none-any.whl", hash = "sha256:ca5cc1069b85dc23070a6628e6bcecb3292acac802399c7f8edc0100619f9009"},
-    {file = "setuptools-80.7.1.tar.gz", hash = "sha256:f6ffc5f0142b1bd8d0ca94ee91b30c0ca862ffd50826da1ea85258a06fd94552"},
+    {file = "setuptools-80.8.0-py3-none-any.whl", hash = "sha256:95a60484590d24103af13b686121328cc2736bee85de8936383111e421b9edc0"},
+    {file = "setuptools-80.8.0.tar.gz", hash = "sha256:49f7af965996f26d43c8ae34539c8d99c5042fbff34302ea151eaa9c207cd257"},
 ]
 
 [package.extras]
@@ -2093,18 +2092,6 @@ files = [
 ]
 
 [[package]]
-name = "types-pyyaml"
-version = "6.0.12.20250516"
-description = "Typing stubs for PyYAML"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "types_pyyaml-6.0.12.20250516-py3-none-any.whl", hash = "sha256:8478208feaeb53a34cb5d970c56a7cd76b72659442e733e268a94dc72b2d0530"},
-    {file = "types_pyyaml-6.0.12.20250516.tar.gz", hash = "sha256:9f21a70216fc0fa1b216a8176db5f9e0af6eb35d2f2932acb87689d03a5bf6ba"},
-]
-
-[[package]]
 name = "typing-extensions"
 version = "4.13.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -2184,4 +2171,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "8cc8270edb29009d217f502f3c3dbb0b3639e34c08f7d32a0cade2bad6926e1d"
+content-hash = "8eb486c7243b1369e57e8f3212f1434be09a80dafe2225c87a7f4f478d34eecf"
