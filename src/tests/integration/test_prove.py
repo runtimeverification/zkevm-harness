@@ -100,7 +100,7 @@ def test_prove_equivalence(
         )
         prover.advance_proof(proof, max_iterations=MAX_ITERATIONS)
 
-    proof_show = APRProofShow(symtool.kprove)
+    proof_show = APRProofShow(symtool.kprove.definition)
     show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
     (symtool.proof_dir / f'{test_id.upper()}-proof-result.txt').write_text(show_result)
 
