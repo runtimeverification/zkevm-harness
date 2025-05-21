@@ -429,14 +429,14 @@ files = [
 
 [[package]]
 name = "click"
-version = "8.2.0"
+version = "8.2.1"
 description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "click-8.2.0-py3-none-any.whl", hash = "sha256:6b303f0b2aa85f1cb4e5303078fadcbcd4e476f114fab9b5007005711839325c"},
-    {file = "click-8.2.0.tar.gz", hash = "sha256:f5452aeddd9988eefa20f90f05ab66f17fce1ee2a36907fd30b05bbb5953814d"},
+    {file = "click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b"},
+    {file = "click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202"},
 ]
 
 [package.dependencies]
@@ -929,14 +929,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.256"
+version = "7.1.257"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.256-py3-none-any.whl", hash = "sha256:1a072ae190fd0edd06c629cae9408d4e222c7728d3ca4686b6baf1b364da8202"},
-    {file = "kframework-7.1.256.tar.gz", hash = "sha256:11f75b1f21e7fdb1a045c9657a3602715f5808c098d2f1b9e8a91e7a5f4a25a2"},
+    {file = "kframework-7.1.257-py3-none-any.whl", hash = "sha256:ab694729c59742d7118187d01d93f408b94152c139042941985f36346fa5c127"},
+    {file = "kframework-7.1.257.tar.gz", hash = "sha256:96c672daad18914e3887432a7692224b9aa018971cb64d1808d93bddefc77543"},
 ]
 
 [package.dependencies]
@@ -955,7 +955,7 @@ xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "kriscv"
-version = "0.1.79"
+version = "0.1.80"
 description = "K tooling for the RISC-V architecture"
 optional = false
 python-versions = "^3.10"
@@ -965,7 +965,7 @@ develop = false
 
 [package.dependencies]
 filelock = "^3.14.0"
-kframework = "7.1.256"
+kframework = "7.1.257"
 pyelftools = "^0.26"
 pyyaml = "^6.0.1"
 riscof = "^1.25.3"
@@ -974,8 +974,8 @@ riscv-assembler = "^1.2.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "v0.1.79"
-resolved_reference = "81d57236c9ae14da8b2964c66980f6afebfb23fe"
+reference = "v0.1.80"
+resolved_reference = "a5b98f54fd2857177f358d9184dc5e259d5238d4"
 
 [[package]]
 name = "linkify-it-py"
@@ -2171,4 +2171,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "8eb486c7243b1369e57e8f3212f1434be09a80dafe2225c87a7f4f478d34eecf"
+content-hash = "0ff27f43f0345e85d30e0385c7ef24e29007ffbbcfd64fb1fd29378a907ea55a"
