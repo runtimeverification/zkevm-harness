@@ -813,14 +813,14 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.131.28"
+version = "6.131.30"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "hypothesis-6.131.28-py3-none-any.whl", hash = "sha256:8f34eb2789d8cb47f4b82f67832cf99596fb2a9919a2753b7aba11458f71edb2"},
-    {file = "hypothesis-6.131.28.tar.gz", hash = "sha256:8294567dd46c21049deb095881ce76e7766e31468c5fb93a37f13431c9b38ad1"},
+    {file = "hypothesis-6.131.30-py3-none-any.whl", hash = "sha256:1a04a43f282a32bffb21dc4b1ab7e68c9b34db0298b9b91933484eca4682d6b4"},
+    {file = "hypothesis-6.131.30.tar.gz", hash = "sha256:c04f748c9cb6c3e3d134699258c2d076afebf40e2752572b6f05f86bd3f23fe5"},
 ]
 
 [package.dependencies]
@@ -959,7 +959,7 @@ xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "kriscv"
-version = "0.1.89"
+version = "0.1.90"
 description = "K tooling for the RISC-V architecture"
 optional = false
 python-versions = "^3.10"
@@ -978,8 +978,8 @@ riscv-assembler = "^1.2.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "v0.1.89"
-resolved_reference = "d411af12a6ccbf7acbe25b1022cd04e193f4e85c"
+reference = "v0.1.90"
+resolved_reference = "cba2d2b5236e1d5600d02a69ef51f55d396c618b"
 
 [[package]]
 name = "linkify-it-py"
@@ -2175,4 +2175,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "425e8b4a6a00ce6e585a85d98deecc90d8d53412cf2144721699587cc76cbf08"
+content-hash = "e642392d05780003a84ab35400f5eb74a306236daf4440eb3414565effab15ae"
