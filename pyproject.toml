@@ -15,7 +15,7 @@ zkevm-semantics = "zkevm_harness.kdist.plugin"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-kriscv = { git = "https://github.com/runtimeverification/riscv-semantics.git", tag = "v0.1.88" }
+kriscv = { git = "https://github.com/runtimeverification/riscv-semantics.git", tag = "v0.1.89" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
