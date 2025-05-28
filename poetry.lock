@@ -933,14 +933,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.257"
+version = "7.1.263"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.257-py3-none-any.whl", hash = "sha256:ab694729c59742d7118187d01d93f408b94152c139042941985f36346fa5c127"},
-    {file = "kframework-7.1.257.tar.gz", hash = "sha256:96c672daad18914e3887432a7692224b9aa018971cb64d1808d93bddefc77543"},
+    {file = "kframework-7.1.263-py3-none-any.whl", hash = "sha256:4db8a7b69ec8962c1fcd1be61f065edce5ab2e9c58f3ee06bc4f6da981b0ac33"},
+    {file = "kframework-7.1.263.tar.gz", hash = "sha256:fcac0ecaf2d168c238463cbd51eb9b4a9ec43dd4b79533d9b4129d4539089582"},
 ]
 
 [package.dependencies]
@@ -959,7 +959,7 @@ xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "kriscv"
-version = "0.1.91"
+version = "0.1.92"
 description = "K tooling for the RISC-V architecture"
 optional = false
 python-versions = "^3.10"
@@ -969,7 +969,7 @@ develop = false
 
 [package.dependencies]
 filelock = "^3.14.0"
-kframework = "7.1.257"
+kframework = "7.1.263"
 pyelftools = "^0.26"
 pyyaml = "^6.0.1"
 riscof = "^1.25.3"
@@ -978,8 +978,8 @@ riscv-assembler = "^1.2.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/riscv-semantics.git"
-reference = "v0.1.91"
-resolved_reference = "f680218afd0f8a10e00af1804ef76c3c3013d406"
+reference = "v0.1.92"
+resolved_reference = "0949ca5d0b8119116e96336e881bf8c6ebea80f9"
 
 [[package]]
 name = "linkify-it-py"
@@ -2175,4 +2175,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "aa50dacf62083c5891db0b3507d1ccd4044b0605ef7c5efae368dab342c50418"
+content-hash = "e5586e333a238904cf226957062d14db7fa35dd3684d9711ef043bae8fb3d1fb"
