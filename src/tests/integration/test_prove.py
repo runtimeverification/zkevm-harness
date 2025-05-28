@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-import kriscv.term_builder as tb
 import pytest
-from kriscv.elf_parser import _memory_segments, entry_point, read_unique_symbol
-from kriscv.sparse_bytes import SparseBytes, SymBytes
 from pyk.cterm import CSubst, CTerm, cterm_build_claim
 from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
+from pyk.kast.manip import remove_generated_cells
 from pyk.proof.reachability import APRProof, APRProver
 from pyk.proof.show import APRProofShow
 
-from .utils import SP1_CONFIG, _elf_file, build_elf, get_symbols, resolve_symbol
+from .utils import SP1_CONFIG, build_elf, get_symbols
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
     from pathlib import Path
 
     from kriscv.symtools import SymTools
@@ -24,9 +22,7 @@ if TYPE_CHECKING:
     from .utils import BuildConfig, TemplateLoader
 
 
-def _init_config(
-    symdata: dict[int, tuple[int, str]], build_config: BuildConfig, elf_file: Path, kriscv: Tools
-) -> CTerm:
+def _init_config(symbolic_names: Iterable[str], build_config: BuildConfig, elf_file: Path, kriscv: Tools) -> CTerm:
     # TODO: Currently, we are constructing the start state of the riscv machine by using the elf file.
     #       We might need to:
     # 1. use the `kriscv` to concrete execute the elf file until it halts.
@@ -34,21 +30,9 @@ def _init_config(
     # 3. set a new halt condition
     # 4. continue the symbolic execution until the new halt condition is reached.
 
-    tmp = {addr: SymBytes(KVariable(var), size) for addr, (size, var) in symdata.items()}
-    with _elf_file(elf_file) as elf:
-        data = _memory_segments(elf)
-        sparse_bytes = SparseBytes.from_data(data, tmp)
-        mem, constraints = sparse_bytes.to_k()
-        (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
-        end_addr = read_unique_symbol(elf, end_symbol, error_loc=str(elf_file))
-        halt_cond = tb.halt_at_address(tb.word(end_addr))
-        config_vars = {
-            '$REGS': tb.regs(dict.fromkeys(range(32), 0)),
-            '$MEM': mem,
-            '$PC': entry_point(elf),
-            '$HALT': halt_cond,
-        }
-        return CTerm(kriscv.init_config(config_vars), constraints)
+    (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
+    init_config = kriscv.config_from_elf(elf_file, end_symbol=end_symbol, symbolic_names=symbolic_names)
+    return CTerm.from_kast(remove_generated_cells(init_config))
 
 
 def _final_config(symtools: SymTools) -> CTerm:
@@ -87,8 +71,9 @@ def test_prove_equivalence(
         proof = APRProof.read_proof_data(proof_dir=symtool.proof_dir, id=test_id.upper())
     else:
         elf_file = build_elf(test_id, load_template, build_config)
-        symdata = {resolve_symbol(elf_file, f'OP{i}'): (32, f'W{i}') for i in range(arg_count)}
-        init_config = _init_config(symdata, build_config, elf_file, tools(build_config.target))
+        init_config = _init_config(
+            [f'W{i}' for i in range(arg_count)], build_config, elf_file, tools(build_config.target)
+        )
         kclaim = cterm_build_claim(test_id.upper(), init_config, _final_config(symtool))
         proof = APRProof.from_claim(symtool.kprove.definition, kclaim[0], {}, symtool.proof_dir)
 

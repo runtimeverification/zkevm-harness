@@ -123,13 +123,6 @@ def get_memory(kriscv: Tools, config: KInner, addr: int, size: int) -> bytes:
     return b''.join(read(i) for i in range(addr, addr + size))
 
 
-def resolve_symbol(elf_file: Path, symbol: str) -> int:
-    from kriscv.elf_parser import read_unique_symbol
-
-    with _elf_file(file=elf_file) as elf:
-        return read_unique_symbol(elf, symbol, error_loc=None)
-
-
 def get_symbols(elf_file: Path, pattern: str) -> list[str]:
     import fnmatch
 

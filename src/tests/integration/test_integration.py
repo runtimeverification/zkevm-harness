@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, get_memory, get_symbols, resolve_symbol
+from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, get_symbols
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -36,19 +36,19 @@ def test_concrete(
     build_config: BuildConfig,
     expected: bytes,
 ) -> None:
+    from kriscv.elf_parser import ELF
+
     # Given
+    elf = ELF.load(build_elf(project_name, load_template, build_config))
+    result_addr = elf.unique_symbol('RESULT').addr
     elf_file = build_elf(project_name, load_template, build_config)
-    result_addr = resolve_symbol(elf_file, 'RESULT')
     (end_symbol,) = get_symbols(elf_file, build_config.end_pattern)
     kriscv = tools(build_config.target)
+    config = kriscv.config_from_elf(elf_file, end_symbol=end_symbol)
 
     # When
-    config = kriscv.run_elf(
-        elf_file,
-        regs=dict.fromkeys(range(32), 0),
-        end_symbol=end_symbol,
-    )
-    actual = get_memory(kriscv, config, result_addr, 32)
+    config = kriscv.run_config(config)
+    actual = kriscv.get_memory(config)[result_addr]
 
     # Then
     assert expected == actual
