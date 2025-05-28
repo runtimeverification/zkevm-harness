@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 from pyk.utils import run_process_2
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
     from typing import Final
 
-    from elftools.elf.elffile import ELFFile  # type: ignore
+    from kriscv.elf_parser import ELF, Symbol
     from kriscv.tools import Tools
     from pyk.kast import KInner
 
@@ -110,7 +108,7 @@ SP1_CONFIG: Final = BuildConfig(
 )
 
 
-def get_memory(kriscv: Tools, config: KInner, addr: int, size: int) -> bytes:
+def get_symbol_value(kriscv: Tools, config: KInner, symbol: Symbol) -> bytes:
     memory = kriscv.get_memory(config)
 
     def read(addr: int) -> bytes:
@@ -120,42 +118,16 @@ def get_memory(kriscv: Tools, config: KInner, addr: int, size: int) -> bytes:
         assert 0 <= b < 256
         return bytes([b])
 
-    return b''.join(read(i) for i in range(addr, addr + size))
+    return b''.join(read(i) for i in range(symbol.addr, symbol.addr + symbol.size))
 
 
-def resolve_symbol(elf_file: Path, symbol: str) -> int:
-    from kriscv.elf_parser import read_unique_symbol
-
-    with _elf_file(file=elf_file) as elf:
-        return read_unique_symbol(elf, symbol, error_loc=None)
-
-
-def get_symbols(elf_file: Path, pattern: str) -> list[str]:
+def filter_symbols(elf: ELF, pattern: str) -> list[str]:
     import fnmatch
 
-    with _elf_file(file=elf_file) as elf:
-        symtab = elf.get_section_by_name('.symtab')
-        assert symtab
-
-        func_symbols = [
-            sym.name
-            for sym in symtab.iter_symbols()
-            if sym['st_info']['type'] == 'STT_FUNC'  # Check if symbol type is FUNC
-        ]
-
-        return fnmatch.filter(func_symbols, pattern)
+    return fnmatch.filter(elf.symbols, pattern)
 
 
-@contextmanager
-def _elf_file(file: Path) -> Iterator[ELFFile]:
-    from elftools.elf.elffile import ELFFile  # type: ignore
-
-    with file.open('rb') as f:
-        elf = ELFFile(f)
-        yield elf
-
-
-def build_elf(project_name: str, load_template: TemplateLoader, build_config: BuildConfig) -> Path:
+def build_elf(project_name: str, load_template: TemplateLoader, build_config: BuildConfig) -> ELF:
     """
     Load the template from `templates/project_name` and build the ELF file according to the build configuration.
     Args:
@@ -163,8 +135,10 @@ def build_elf(project_name: str, load_template: TemplateLoader, build_config: Bu
         load_template: The template loader to use.
         build_config: The build configuration to use.
     Returns:
-        The path to the ELF file.
+        The parsed ELF.
     """
+    from kriscv.elf_parser import ELF
+
     project_dir = load_template(
         template_name=project_name,
         context={
@@ -175,6 +149,5 @@ def build_elf(project_name: str, load_template: TemplateLoader, build_config: Bu
 
     run_process_2(build_config.build_cmd, cwd=project_dir)
     elf_file = project_dir / build_config.elf_path / project_name
-
-    assert elf_file.is_file()
-    return elf_file
+    elf = ELF.load(elf_file)
+    return elf
