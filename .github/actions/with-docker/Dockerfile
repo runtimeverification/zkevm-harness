@@ -47,6 +47,6 @@ RUN curl -fLsS https://sp1up.succinct.xyz | bash \
  && cargo prove --version
 
 ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
-ARG POETRY_VERSION="2.1.1"
-RUN curl -fLsS https://install.python-poetry.org | python3 - --version ${POETRY_VERSION} \
- && poetry --version
+ARG UV_VERSION="0.7.8"
+RUN curl -LsSf https://astral.sh/uv/${UV_VERSION}/install.sh | sh \
+ && uv --version
