@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 import pytest
-from pyk.cterm import CTerm, cterm_build_claim
-from pyk.kast.inner import KApply, KSequence, KSort, KVariable, Subst
-from pyk.kast.manip import free_vars
 from pyk.proof.reachability import APRProof, APRProver
+
+from zkevm_harness.utils import halt_claim_from_elf
 
 from .utils import SP1_CONFIG, build_elf, filter_symbols
 
@@ -14,7 +13,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
 
-    from kriscv.elf_parser import ELF
     from kriscv.symtools import SymTools
     from kriscv.tools import Tools
 
@@ -50,10 +48,15 @@ def test_prove_equivalence(
         proof = APRProof.read_proof_data(proof_dir=symtool.proof_dir, id=test_id.upper())
     else:
         elf = build_elf(test_id, load_template, build_config)
-        init_config = _init_config(tool, elf=elf, build_config=build_config, arg_count=arg_count)
-        final_config = _final_config(symtool)
-        kclaim = cterm_build_claim(test_id.upper(), init_config, final_config)
-        proof = APRProof.from_claim(symtool.kprove.definition, kclaim[0], {}, symtool.proof_dir)
+        (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
+        kclaim = halt_claim_from_elf(
+            tools=tool,
+            elf=elf,
+            label=test_id.upper(),
+            end_symbol=end_symbol,
+            symbolic_names=[f'OP{i}' for i in range(arg_count)],
+        )
+        proof = APRProof.from_claim(symtool.kprove.definition, kclaim, {}, symtool.proof_dir)
 
     # When
     with symtool.explore(id=test_id.upper()) as kcfg_explore:
@@ -69,25 +72,3 @@ def test_prove_equivalence(
 
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
-
-
-def _init_config(tools: Tools, *, elf: ELF, build_config: BuildConfig, arg_count: int) -> CTerm:
-    (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
-    init_kast = tools.config_from_elf(
-        elf,
-        regs=dict.fromkeys(range(32), 0),
-        end_symbol=end_symbol,
-        symbolic_names=[f'OP{i}' for i in range(arg_count)],
-    )
-    return CTerm.from_kast(init_kast)
-
-
-def _final_config(symtools: SymTools) -> CTerm:
-    config = symtools.kprove.definition.empty_config(KSort('GeneratedTopCell'))
-    subst = Subst(
-        {
-            'INSTRS_CELL': KSequence(KApply('#HALT'), KApply('#EXECUTE')),
-            **{vname: KVariable(f'FINAL_{vname}') for vname in free_vars(config) if vname != 'INSTRS_CELL'},
-        },
-    )
-    return CTerm(subst(config))
