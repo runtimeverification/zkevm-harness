@@ -3,15 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 import pytest
-from pyk.proof.reachability import APRProof, APRProver
 
-from zkevm_harness.utils import halt_claim_from_elf
-
-from .utils import SP1_CONFIG, build_elf, filter_symbols
+from .utils import SP1_CONFIG, SPEC_DIR
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
 
     from kriscv.symtools import SymTools
     from kriscv.tools import Tools
@@ -19,52 +15,83 @@ if TYPE_CHECKING:
     from .utils import BuildConfig, TemplateLoader
 
 
-PROVE_TEST_DATA: Final = (('add-test', 2, SP1_CONFIG),)
-DEPTH: Final = 1000
+MAX_DEPTH: Final = 1000
 MAX_ITERATIONS: Final = 45
 
 
+GEN_TEST_DATA: Final = (('add-test-sp1', SP1_CONFIG, 'add-test', ['OP0', 'OP1']),)
+PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_TEST_DATA)
+
+
+@pytest.mark.skip
 @pytest.mark.parametrize(
-    'test_id,arg_count,build_config',
+    'test_id,build_config,project_name,symbolic_names',
+    GEN_TEST_DATA,
+    ids=[test_id for test_id, *_ in GEN_TEST_DATA],
+)
+def test_generate_claim(
+    tools: Callable[[str], Tools],
+    load_template: TemplateLoader,
+    # ---
+    test_id: str,
+    build_config: BuildConfig,
+    project_name: str,
+    symbolic_names: list[str],
+) -> None:
+    from zkevm_harness.utils import halt_claim_from_elf, spec_module_text
+
+    from .utils import build_elf, filter_symbols
+
+    tool = tools(build_config.target)
+    spec_file = SPEC_DIR / f'{test_id}.k'
+
+    elf = build_elf(project_name, load_template, build_config)
+    (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
+    claim = halt_claim_from_elf(
+        tools=tool,
+        elf=elf,
+        label=test_id,
+        end_symbol=end_symbol,
+        symbolic_names=symbolic_names,
+    )
+    module_text = spec_module_text(
+        tools=tool,
+        module_name=test_id.upper(),
+        claim=claim,
+    ).strip()
+
+    spec_file.write_text(module_text)
+
+
+@pytest.mark.parametrize(
+    'test_id,build_config',
     PROVE_TEST_DATA,
     ids=[test_id for test_id, *_ in PROVE_TEST_DATA],
 )
 def test_prove_equivalence(
-    custom_temp_dir: Path,
     symtools: Callable[[str, str, str], SymTools],
-    tools: Callable[[str], Tools],
-    load_template: TemplateLoader,
+    # ---
     test_id: str,
-    arg_count: int,
     build_config: BuildConfig,
 ) -> None:
-    if test_id in ['add-test']:
-        pytest.skip(f'Skipping {test_id} because we are still working on it')
+    if test_id in ['add-test-sp1']:
+        pytest.skip('Work in progress')
 
     # Given
-    tool = tools(build_config.target)
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
-    if APRProof.proof_data_exists(test_id.upper(), symtool.proof_dir):
-        proof = APRProof.read_proof_data(proof_dir=symtool.proof_dir, id=test_id.upper())
-    else:
-        elf = build_elf(test_id, load_template, build_config)
-        (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
-        kclaim = halt_claim_from_elf(
-            tools=tool,
-            elf=elf,
-            label=test_id.upper(),
-            end_symbol=end_symbol,
-            symbolic_names=[f'OP{i}' for i in range(arg_count)],
-        )
-        proof = APRProof.from_claim(symtool.kprove.definition, kclaim, {}, symtool.proof_dir)
+
+    spec_file = SPEC_DIR / f'{test_id}.k'
+    spec_module_name = test_id.upper()
+    claim_id = f'{spec_module_name}.{test_id}'
 
     # When
-    with symtool.explore(id=test_id.upper()) as kcfg_explore:
-        prover = APRProver(
-            kcfg_explore=kcfg_explore,
-            execute_depth=DEPTH,
-        )
-        prover.advance_proof(proof, max_iterations=MAX_ITERATIONS)
+    proof = symtool.prove(
+        spec_file=spec_file,
+        spec_module=spec_module_name,
+        claim_id=claim_id,
+        max_depth=MAX_DEPTH,
+        max_iterations=MAX_ITERATIONS,
+    )
 
     proof_show = symtool.proof_show
     show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
