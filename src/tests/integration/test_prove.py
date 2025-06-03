@@ -19,13 +19,40 @@ MAX_DEPTH: Final = 1000
 MAX_ITERATIONS: Final = 45
 
 
-GEN_TEST_DATA: Final = (('add-test-sp1', SP1_CONFIG, 'add-test', ['OP0', 'OP1']),)
+GEN_TEST_DATA: Final = (
+    # 0x00 STOP
+    ('add-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x01'}, ['OP0', 'OP1']),
+    ('mul-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x02'}, ['OP0', 'OP1']),
+    ('sub-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x03'}, ['OP0', 'OP1']),
+    ('div-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x04'}, ['OP0', 'OP1']),
+    ('sdiv-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x05'}, ['OP0', 'OP1']),
+    ('mod-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x06'}, ['OP0', 'OP1']),
+    ('smod-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x07'}, ['OP0', 'OP1']),
+    # 0x08 ADDMOD
+    # 0x09 MULMOD
+    ('exp-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x0a'}, ['OP0', 'OP1']),
+    ('signextend-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x0b'}, ['OP0', 'OP1']),
+    ('lt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x10'}, ['OP0', 'OP1']),
+    ('gt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x11'}, ['OP0', 'OP1']),
+    ('slt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x12'}, ['OP0', 'OP1']),
+    ('sgt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x13'}, ['OP0', 'OP1']),
+    ('eq-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x14'}, ['OP0', 'OP1']),
+    # 0x15 ISZERO
+    ('and-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x16'}, ['OP0', 'OP1']),
+    ('or-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x17'}, ['OP0', 'OP1']),
+    ('xor-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x18'}, ['OP0', 'OP1']),
+    # 0x19 NOT
+    ('byte-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1a'}, ['OP0', 'OP1']),
+    ('shl-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1b'}, ['OP0', 'OP1']),
+    ('shr-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
+    ('sar-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
+)
 PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_TEST_DATA)
 
 
 @pytest.mark.skip
 @pytest.mark.parametrize(
-    'test_id,build_config,project_name,symbolic_names',
+    'test_id,build_config,project_name,context,symbolic_names',
     GEN_TEST_DATA,
     ids=[test_id for test_id, *_ in GEN_TEST_DATA],
 )
@@ -37,6 +64,7 @@ def test_generate_claim(
     test_id: str,
     build_config: BuildConfig,
     project_name: str,
+    context: dict[str, str],
     symbolic_names: list[str],
 ) -> None:
     from pyk.ktool.claim_loader import ClaimLoader
@@ -49,7 +77,7 @@ def test_generate_claim(
     tool = tools(build_config.target)
     spec_file = SPEC_DIR / f'{test_id}.k'
 
-    elf = build_elf(project_name, load_template, build_config)
+    elf = build_elf(project_name, load_template, build_config, context=context)
     (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
     claim = halt_claim_from_elf(
         tools=tool,
@@ -76,6 +104,7 @@ def test_generate_claim(
     )
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'test_id,build_config',
     PROVE_TEST_DATA,
@@ -87,9 +116,6 @@ def test_prove_equivalence(
     test_id: str,
     build_config: BuildConfig,
 ) -> None:
-    if test_id in ['add-test-sp1']:
-        pytest.skip('Work in progress')
-
     # Given
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
 

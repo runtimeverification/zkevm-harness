@@ -1,5 +1,5 @@
 [package]
-name = "add-test"
+name = "simple-2-op-test"
 version = "0.1.0"
 edition = "2021"
 
