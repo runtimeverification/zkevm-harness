@@ -31,6 +31,7 @@ PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config
 )
 def test_generate_claim(
     tools: Callable[[str], Tools],
+    symtools: Callable[[str, str, str], SymTools],
     load_template: TemplateLoader,
     # ---
     test_id: str,
@@ -38,10 +39,13 @@ def test_generate_claim(
     project_name: str,
     symbolic_names: list[str],
 ) -> None:
+    from pyk.ktool.claim_loader import ClaimLoader
+
     from zkevm_harness.utils import halt_claim_from_elf, spec_module_text
 
     from .utils import build_elf, filter_symbols
 
+    # Given
     tool = tools(build_config.target)
     spec_file = SPEC_DIR / f'{test_id}.k'
 
@@ -60,7 +64,16 @@ def test_generate_claim(
         claim=claim,
     ).strip()
 
+    # When
     spec_file.write_text(module_text)
+
+    # Then
+    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
+    claim_label = f'{test_id.upper()}.{test_id}'
+    assert ClaimLoader(symtool.kprove).load_claims(
+        spec_file=spec_file,
+        claim_labels=[claim_label],
+    )
 
 
 @pytest.mark.parametrize(
