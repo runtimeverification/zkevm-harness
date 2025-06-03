@@ -31,7 +31,7 @@ PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config
 )
 def test_generate_claim(
     tools: Callable[[str], Tools],
-    symtools: Callable[[str, str, str], SymTools],
+    symtools: Callable[[str, str], SymTools],
     load_template: TemplateLoader,
     # ---
     test_id: str,
@@ -68,7 +68,7 @@ def test_generate_claim(
     spec_file.write_text(module_text)
 
     # Then
-    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
+    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
     claim_label = f'{test_id.upper()}.{test_id}'
     assert ClaimLoader(symtool.kprove).load_claims(
         spec_file=spec_file,
@@ -82,7 +82,7 @@ def test_generate_claim(
     ids=[test_id for test_id, *_ in PROVE_TEST_DATA],
 )
 def test_prove_equivalence(
-    symtools: Callable[[str, str, str], SymTools],
+    symtools: Callable[[str, str], SymTools],
     # ---
     test_id: str,
     build_config: BuildConfig,
@@ -91,7 +91,7 @@ def test_prove_equivalence(
         pytest.skip('Work in progress')
 
     # Given
-    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib', 'zkevm-semantics.source')
+    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
 
     spec_file = SPEC_DIR / f'{test_id}.k'
     spec_module_name = test_id.upper()
