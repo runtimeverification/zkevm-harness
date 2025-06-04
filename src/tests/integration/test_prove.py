@@ -46,6 +46,7 @@ GEN_TEST_DATA: Final = (
     ('shl-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1b'}, ['OP0', 'OP1']),
     ('shr-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
     ('sar-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
+    ('keccak256-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
 )
 PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_TEST_DATA)
 
