@@ -8,7 +8,7 @@ use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
 
 #[unsafe(no_mangle)]
-pub static mut OPCODE: u8 = 0x01; // ADD
+pub static mut OPCODE: u8 = {{ opcode }};
 
 #[unsafe(no_mangle)]
 pub static mut OP0: [u8; 32] = [

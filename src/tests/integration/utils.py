@@ -128,13 +128,20 @@ def filter_symbols(elf: ELF, pattern: str) -> list[str]:
     return fnmatch.filter(elf.symbols, pattern)
 
 
-def build_elf(project_name: str, load_template: TemplateLoader, build_config: BuildConfig) -> ELF:
+def build_elf(
+    project_name: str,
+    load_template: TemplateLoader,
+    build_config: BuildConfig,
+    *,
+    context: dict[str, str] | None = None,
+) -> ELF:
     """
     Load the template from `templates/project_name` and build the ELF file according to the build configuration.
     Args:
         project_name: The name of the project to build.
         load_template: The template loader to use.
         build_config: The build configuration to use.
+        context: Context for template instantiation
     Returns:
         The parsed ELF.
     """
@@ -145,6 +152,7 @@ def build_elf(project_name: str, load_template: TemplateLoader, build_config: Bu
         context={
             'zkvm_deps': build_config.zkvm_deps,
             'src_header': build_config.src_header,
+            **(context or {}),
         },
     )
 
