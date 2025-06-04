@@ -37,11 +37,11 @@ GEN_TEST_DATA: Final = (
     ('slt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x12'}, ['OP0', 'OP1']),
     ('sgt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x13'}, ['OP0', 'OP1']),
     ('eq-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x14'}, ['OP0', 'OP1']),
-    # 0x15 ISZERO
+    ('iszero-test-sp1', SP1_CONFIG, 'simple-1-op-test', {'opcode': '0x15'}, ['OP0']),
     ('and-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x16'}, ['OP0', 'OP1']),
     ('or-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x17'}, ['OP0', 'OP1']),
     ('xor-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x18'}, ['OP0', 'OP1']),
-    # 0x19 NOT
+    ('not-test-sp1', SP1_CONFIG, 'simple-1-op-test', {'opcode': '0x19'}, ['OP0']),
     ('byte-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1a'}, ['OP0', 'OP1']),
     ('shl-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1b'}, ['OP0', 'OP1']),
     ('shr-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
