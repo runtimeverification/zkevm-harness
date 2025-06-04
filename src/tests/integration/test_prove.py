@@ -19,8 +19,8 @@ MAX_DEPTH: Final = 1000
 MAX_ITERATIONS: Final = 45
 
 
-GEN_TEST_DATA: Final = (
-    # 0x00 STOP
+GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str]], ...]] = (
+    ('stop-test-sp1', SP1_CONFIG, 'stop-test', {}, []),
     ('add-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x01'}, ['OP0', 'OP1']),
     ('mul-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x02'}, ['OP0', 'OP1']),
     ('sub-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x03'}, ['OP0', 'OP1']),
@@ -105,7 +105,6 @@ def test_generate_claim(
     )
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize(
     'test_id,build_config',
     PROVE_TEST_DATA,
@@ -117,6 +116,9 @@ def test_prove_equivalence(
     test_id: str,
     build_config: BuildConfig,
 ) -> None:
+    if test_id != 'stop-test-sp1':
+        pytest.skip(reason='Work in progress')
+
     # Given
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
 
