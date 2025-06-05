@@ -38,7 +38,7 @@ jobs:
       - name: 'Update uv files'
         run: |
           KRISCV_VERSION=$(cat deps/kriscv_release)
-          sed -i 's!    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@[v0-9\.]*"!"    kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@v'${KRISCV_VERSION}'"
+          sed -i 's!    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@[v0-9\.]*"!    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@v'${KRISCV_VERSION}'"!' pyproject.toml
           uv lock --upgrade
           git add pyproject.toml uv.lock && git commit -m "pyproject.toml: Sync Version ${KRISCV_VERSION}" || true
 
