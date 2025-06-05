@@ -28,8 +28,8 @@ GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str
     ('sdiv-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x05'}, ['OP0', 'OP1']),
     ('mod-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x06'}, ['OP0', 'OP1']),
     ('smod-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x07'}, ['OP0', 'OP1']),
-    # 0x08 ADDMOD
-    # 0x09 MULMOD
+    ('addmod-test-sp1', SP1_CONFIG, 'simple-3-op-test', {'opcode': '0x08'}, ['OP0', 'OP1', 'OP2']),
+    ('mulmod-test-sp1', SP1_CONFIG, 'simple-3-op-test', {'opcode': '0x09'}, ['OP0', 'OP1', 'OP2']),
     ('exp-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x0a'}, ['OP0', 'OP1']),
     ('signextend-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x0b'}, ['OP0', 'OP1']),
     ('lt-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x10'}, ['OP0', 'OP1']),
