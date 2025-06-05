@@ -30,19 +30,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v9
+      - name: 'Install uv'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.7.8'
 
-      - name: 'Update Poetry files'
+      - name: 'Update uv files'
         run: |
           KRISCV_VERSION=$(cat deps/kriscv_release)
-          sed -i 's!kriscv = { git = "https://github.com/runtimeverification/riscv-semantics.git", tag = "[v0-9\.]*" }!kriscv = { git = "https://github.com/runtimeverification/riscv-semantics.git", tag = "v'${KRISCV_VERSION}'" }!' pyproject.toml
-          poetry update
-          git add pyproject.toml poetry.lock && git commit -m "pyproject.toml: Sync Version ${KRISCV_VERSION}" || true
+          sed -i 's!    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@[v0-9\.]*"!    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@v'${KRISCV_VERSION}'"!' pyproject.toml
+          uv lock --upgrade
+          git add pyproject.toml uv.lock && git commit -m "pyproject.toml: Sync Version ${KRISCV_VERSION}" || true
 
       - name: 'Update K release'
         run: |
-          K_VERSION=$(poetry run python3 -c 'import pyk; print(pyk.__version__)')
+          K_VERSION=$(uv run python3 -c 'import pyk; print(pyk.__version__)')
           echo ${K_VERSION} > deps/k_release
           git add deps/k_release && git commit -m "deps/k_release: Set Version ${K_VERSION}" || true
 
