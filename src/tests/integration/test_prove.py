@@ -47,6 +47,7 @@ GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str
     ('shr-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
     ('sar-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
     ('keccak256-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
+    # ...
     ('push0-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x5f', 'arity': '0', 'value': '[]'}, []),
     ('push1-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x60', 'arity': '1', 'value': '[0x01]'}, ['OP0']),
     ('push2-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x61', 'arity': '2', 'value': '[0x00, 0x01]'}, ['OP0']),
@@ -57,6 +58,10 @@ GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str
         {'opcode': '0x62', 'arity': '3', 'value': '[0x00, 0x00, 0x01]'},
         ['OP0'],
     ),
+    ('swap1-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x90', 'n': '1'}, ['OP0', 'OP1']),
+    ('swap2-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x91', 'n': '2'}, ['OP0', 'OP1']),
+    ('swap3-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x92', 'n': '3'}, ['OP0', 'OP1']),
+    ('swap4-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
 )
 PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_TEST_DATA)
 
