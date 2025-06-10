@@ -62,6 +62,10 @@ GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str
     ('dup2-test-sp1', SP1_CONFIG, 'dup-test', {'opcode': '0x81', 'n': '2'}, ['OP0']),
     ('dup3-test-sp1', SP1_CONFIG, 'dup-test', {'opcode': '0x82', 'n': '3'}, ['OP0']),
     ('dup4-test-sp1', SP1_CONFIG, 'dup-test', {'opcode': '0x83', 'n': '4'}, ['OP0']),
+    ('swap1-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x90', 'n': '1'}, ['OP0', 'OP1']),
+    ('swap2-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x91', 'n': '2'}, ['OP0', 'OP1']),
+    ('swap3-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x92', 'n': '3'}, ['OP0', 'OP1']),
+    ('swap4-test-sp1', SP1_CONFIG, 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
 )
 PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_TEST_DATA)
 
