@@ -1,0 +1,10 @@
+[package]
+name = "simple-1-op-test"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+revm-interpreter = { version = "15.2.0", default-features = false }
+{{ zkvm_deps }}
