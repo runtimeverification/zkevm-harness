@@ -137,15 +137,11 @@ def test_prove_equivalence(
     # Given
     symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
 
-    spec_file = SPEC_DIR / f'{test_id}.k'
-    spec_module_name = test_id.upper()
-    claim_id = f'{spec_module_name}.{test_id}'
-
     # When
     proof = symtool.prove(
-        spec_file=spec_file,
-        spec_module=spec_module_name,
-        claim_id=claim_id,
+        spec_file=SPEC_DIR / f'{test_id}.k',
+        spec_module=test_id.upper(),
+        claim_id=test_id,
         max_depth=MAX_DEPTH,
         max_iterations=MAX_ITERATIONS,
     )
