@@ -49,6 +49,7 @@ GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str
     ('keccak256-test-sp1', SP1_CONFIG, 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
     # ...
     ('mload-test-sp1', SP1_CONFIG, 'mload-test', {}, ['OFFSET', 'VALUE']),
+    ('mstore-test-sp1', SP1_CONFIG, 'mstore-test', {}, ['OFFSET', 'VALUE']),
     # ...
     ('push0-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x5f', 'arity': '0', 'value': '[]'}, []),
     ('push1-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x60', 'arity': '1', 'value': '[0x01]'}, ['OP0']),
