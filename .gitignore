@@ -2,3 +2,5 @@
 __pycache__/
 .coverage
 .vscode/
+src/tests/integration/test-data/specs/*.json
+debug*/
