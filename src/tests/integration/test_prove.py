@@ -9,6 +9,7 @@ from .utils import SP1_CONFIG, SPEC_DIR
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
 
     from kriscv.symtools import APRProof, SymTools
     from kriscv.tools import Tools
@@ -133,40 +134,41 @@ def test_generate_claim(
     )
 
 
-SYMBOLIC_TEST_DATA: Final = tuple(test_id for test_id, *_ in GEN_CLAIM_TEST_DATA)
+SPEC_FILES: Final = tuple(SPEC_DIR.glob('*.k'))
 
 
-@pytest.mark.parametrize('test_id', SYMBOLIC_TEST_DATA)
+@pytest.mark.parametrize('spec_file', SPEC_FILES, ids=[spec_file.name for spec_file in SPEC_FILES])
 def test_symbolic(
-    test_id: str,
-    symtools_for_test_id: Callable[[str], SymTools],
+    spec_file: Path,
+    symtools_for_spec: Callable[[Path], SymTools],
 ) -> None:
-    if test_id != 'stop-test-sp1':
+    if spec_file.name != 'stop-test-sp1.k':
         pytest.skip(reason='Work in progress')
 
     # Given
-    symtools = symtools_for_test_id(test_id)
+    symtools = symtools_for_spec(spec_file)
 
     # When
     proof = symtools.prove(
-        spec_file=SPEC_DIR / f'{test_id}.k',
-        spec_module=test_id.upper(),
-        claim_id=test_id,
+        spec_file=spec_file,
+        spec_module=spec_file.stem.upper(),
+        claim_id=spec_file.stem,
         max_depth=MAX_DEPTH,
         max_iterations=MAX_ITERATIONS,
     )
 
-    # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
+    # Then
+    # Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
-    generate_report(proof, symtools, test_id)
+    generate_report(proof, symtools, spec_file)
 
 
 @pytest.fixture
-def symtools_for_test_id(
+def symtools_for_spec(
     symtools: Callable[[str, str], SymTools],
-) -> Callable[[str], SymTools]:
-    def result(test_id: str) -> SymTools:
-        toolchain = test_id.split('-')[-1]
+) -> Callable[[Path], SymTools]:
+    def result(spec_file: Path) -> SymTools:
+        toolchain = spec_file.stem.split('-')[-1]
         assert toolchain in ['risc0', 'sp1']
         return symtools(f'zkevm-semantics.{toolchain}-haskell', f'zkevm-semantics.{toolchain}-lib')
 
@@ -188,7 +190,7 @@ def collect_int2bytes(term: KInner) -> list[KInner]:
     return int2bytes_list
 
 
-def generate_report(proof: APRProof, symtools: SymTools, test_id: str) -> None:
+def generate_report(proof: APRProof, symtools: SymTools, spec_file: Path) -> None:
     from kriscv.utils import kast_print
 
     report: list[str] = []
@@ -204,4 +206,4 @@ def generate_report(proof: APRProof, symtools: SymTools, test_id: str) -> None:
 
     report.extend(symtools.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
 
-    (symtools.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text('\n'.join(report))
+    (symtools.proof_dir / f'{spec_file.name.upper()}-proof-result.txt').write_text('\n'.join(report))
