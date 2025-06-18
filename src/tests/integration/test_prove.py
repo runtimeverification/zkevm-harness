@@ -133,28 +133,22 @@ def test_generate_claim(
     )
 
 
-PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_CLAIM_TEST_DATA)
+PROVE_TEST_DATA: Final = tuple(test_id for test_id, *_ in GEN_CLAIM_TEST_DATA)
 
 
-@pytest.mark.parametrize(
-    'test_id,build_config',
-    PROVE_TEST_DATA,
-    ids=[test_id for test_id, *_ in PROVE_TEST_DATA],
-)
+@pytest.mark.parametrize('test_id', PROVE_TEST_DATA)
 def test_prove_equivalence(
-    symtools: Callable[[str, str], SymTools],
-    # ---
     test_id: str,
-    build_config: BuildConfig,
+    symtools_for_test_id: Callable[[str], SymTools],
 ) -> None:
     if test_id != 'stop-test-sp1':
         pytest.skip(reason='Work in progress')
 
     # Given
-    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
+    symtools = symtools_for_test_id(test_id)
 
     # When
-    proof = symtool.prove(
+    proof = symtools.prove(
         spec_file=SPEC_DIR / f'{test_id}.k',
         spec_module=test_id.upper(),
         claim_id=test_id,
@@ -164,7 +158,19 @@ def test_prove_equivalence(
 
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
-    generate_report(proof, symtool, test_id)
+    generate_report(proof, symtools, test_id)
+
+
+@pytest.fixture
+def symtools_for_test_id(
+    symtools: Callable[[str, str], SymTools],
+) -> Callable[[str], SymTools]:
+    def result(test_id: str) -> SymTools:
+        toolchain = test_id.split('-')[-1]
+        assert toolchain in ['risc0', 'sp1']
+        return symtools(f'zkevm-semantics.{toolchain}-haskell', f'zkevm-semantics.{toolchain}-lib')
+
+    return result
 
 
 def collect_int2bytes(term: KInner) -> list[KInner]:
@@ -182,7 +188,7 @@ def collect_int2bytes(term: KInner) -> list[KInner]:
     return int2bytes_list
 
 
-def generate_report(proof: APRProof, symtool: SymTools, test_id: str) -> None:
+def generate_report(proof: APRProof, symtools: SymTools, test_id: str) -> None:
     from kriscv.utils import kast_print
 
     report: list[str] = []
@@ -193,9 +199,9 @@ def generate_report(proof: APRProof, symtool: SymTools, test_id: str) -> None:
         int2bytes_list = collect_int2bytes(regs)
         for int2bytes in int2bytes_list:
             report.append(
-                f'{node.id} has `Int2Bytes` in their `regs` cells: {kast_print(int2bytes, kprint=symtool.kprove)}'
+                f'{node.id} has `Int2Bytes` in their `regs` cells: {kast_print(int2bytes, kprint=symtools.kprove)}'
             )
 
-    report.extend(symtool.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
+    report.extend(symtools.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
 
-    (symtool.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text('\n'.join(report))
+    (symtools.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text('\n'.join(report))
