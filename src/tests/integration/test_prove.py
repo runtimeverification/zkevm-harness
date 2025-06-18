@@ -133,11 +133,11 @@ def test_generate_claim(
     )
 
 
-PROVE_TEST_DATA: Final = tuple(test_id for test_id, *_ in GEN_CLAIM_TEST_DATA)
+SYMBOLIC_TEST_DATA: Final = tuple(test_id for test_id, *_ in GEN_CLAIM_TEST_DATA)
 
 
-@pytest.mark.parametrize('test_id', PROVE_TEST_DATA)
-def test_prove_equivalence(
+@pytest.mark.parametrize('test_id', SYMBOLIC_TEST_DATA)
+def test_symbolic(
     test_id: str,
     symtools_for_test_id: Callable[[str], SymTools],
 ) -> None:
