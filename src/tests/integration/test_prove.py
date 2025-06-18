@@ -18,10 +18,6 @@ if TYPE_CHECKING:
     from .utils import BuildConfig, TemplateLoader
 
 
-MAX_DEPTH: Final = 1000
-MAX_ITERATIONS: Final = 1
-
-
 TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('stop-test', 'stop-test', {}, []),
     ('add-test', 'simple-2-op-test', {'opcode': '0x01'}, ['OP0', 'OP1']),
@@ -133,6 +129,9 @@ def test_generate_claim(
         claim_labels=[claim_label],
     )
 
+
+MAX_DEPTH: Final = 1000
+MAX_ITERATIONS: Final = 1
 
 SPEC_FILES: Final = tuple(SPEC_DIR.glob('*.k'))
 
