@@ -73,18 +73,18 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('swap4-test', 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
 )
 
-GEN_TEST_DATA: Final = tuple(
+GEN_CLAIM_TEST_DATA: Final = tuple(
     (f'{test_id}-sp1', SP1_CONFIG, project_name, context, symbolic_names)
     for test_id, project_name, context, symbolic_names in TEMPLATE_DATA
 )
-PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_TEST_DATA)
+PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_CLAIM_TEST_DATA)
 
 
 @pytest.mark.skip
 @pytest.mark.parametrize(
     'test_id,build_config,project_name,context,symbolic_names',
-    GEN_TEST_DATA,
-    ids=[test_id for test_id, *_ in GEN_TEST_DATA],
+    GEN_CLAIM_TEST_DATA,
+    ids=[test_id for test_id, *_ in GEN_CLAIM_TEST_DATA],
 )
 def test_generate_claim(
     tools: Callable[[str], Tools],
