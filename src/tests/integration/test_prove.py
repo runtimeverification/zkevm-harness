@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import shutil
 from typing import TYPE_CHECKING, Final
 
 import pytest
+from kriscv.elf_parser import ELF
 from pyk.kast.inner import KApply
 
-from .utils import SP1_CONFIG, SPEC_DIR
+from .utils import BINARY_DIR, SP1_CONFIG, SPEC_DIR
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -101,9 +103,17 @@ def test_generate_claim(
 
     # Given
     tool = tools(build_config.target)
-    spec_file = SPEC_DIR / f'{test_id}.k'
+    binary_file = BINARY_DIR / test_id
+    elf_file = build_elf(project_name, load_template, build_config, context=context)
 
-    elf = build_elf(project_name, load_template, build_config, context=context)
+    # When
+    shutil.copy2(elf_file, binary_file)
+
+    # And given
+    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
+    spec_file = SPEC_DIR / f'{test_id}.k'
+    claim_label = f'{test_id.upper()}.{test_id}'
+    elf = ELF.load(binary_file)
     (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
     claim = halt_claim_from_elf(
         tools=tool,
@@ -122,8 +132,6 @@ def test_generate_claim(
     spec_file.write_text(module_text)
 
     # Then
-    symtool = symtools(f'{build_config.target}-haskell', f'{build_config.target}-lib')
-    claim_label = f'{test_id.upper()}.{test_id}'
     assert ClaimLoader(symtool.kprove).load_claims(
         spec_file=spec_file,
         claim_labels=[claim_label],
