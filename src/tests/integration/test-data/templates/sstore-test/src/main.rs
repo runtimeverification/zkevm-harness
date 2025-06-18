@@ -4,7 +4,7 @@ use revm_interpreter::interpreter::{Contract, Interpreter, SharedMemory};
 use revm_interpreter::interpreter_action::InterpreterAction;
 use revm_interpreter::opcode::make_instruction_table;
 use revm_interpreter::primitives::specification::CancunSpec;
-use revm_interpreter::primitives::{address, Bytecode, Bytes, HashMap, B256, U256};
+use revm_interpreter::primitives::{address, Bytecode, Bytes, HashMap, U256};
 use revm_interpreter::DummyHost;
 
 #[unsafe(no_mangle)]
@@ -81,7 +81,7 @@ fn main() {
         panic!()
     };
 
-    let key: U256 = B256::from(unsafe { KEY }).into();
+    let key = U256::from_be_bytes(unsafe { KEY });
     let Some(value) = host.storage.get(&key) else {
         panic!()
     };
