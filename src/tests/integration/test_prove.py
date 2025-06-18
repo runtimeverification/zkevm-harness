@@ -77,7 +77,6 @@ GEN_CLAIM_TEST_DATA: Final = tuple(
     (f'{test_id}-sp1', SP1_CONFIG, project_name, context, symbolic_names)
     for test_id, project_name, context, symbolic_names in TEMPLATE_DATA
 )
-PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_CLAIM_TEST_DATA)
 
 
 @pytest.mark.skip
@@ -132,6 +131,9 @@ def test_generate_claim(
         spec_file=spec_file,
         claim_labels=[claim_label],
     )
+
+
+PROVE_TEST_DATA: Final = tuple((test_id, build_config) for test_id, build_config, *_ in GEN_CLAIM_TEST_DATA)
 
 
 @pytest.mark.parametrize(
