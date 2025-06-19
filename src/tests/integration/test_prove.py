@@ -7,7 +7,7 @@ import pytest
 from kriscv.elf_parser import ELF
 from pyk.kast.inner import KApply
 
-from .utils import BINARY_DIR, SP1_CONFIG, SPEC_DIR
+from .utils import BINARY_DIR, RISC0_CONFIG, SP1_CONFIG, SPEC_DIR, filter_symbols
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -136,6 +136,54 @@ def test_generate_claim(
         spec_file=spec_file,
         claim_labels=[claim_label],
     )
+
+
+BIN_FILES: Final = tuple(BINARY_DIR.glob('*'))
+
+
+@pytest.mark.parametrize('bin_file', BIN_FILES, ids=[bin_file.name for bin_file in BIN_FILES])
+def test_concrete(
+    bin_file: Path,
+    build_config_for_binary: Callable[[Path], BuildConfig],
+    tools: Callable[[str], Tools],
+) -> None:
+    from pyk.cterm import CTerm
+    from pyk.kast.inner import KApply, KSequence
+
+    # Given
+    build_config = build_config_for_binary(bin_file)
+    elf = ELF.load(bin_file)
+    (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
+    kriscv = tools(build_config.target)
+    init_config = kriscv.config_from_elf(
+        elf,
+        regs=dict.fromkeys(range(32), 0),
+        end_symbol=end_symbol,
+    )
+
+    # When
+    final_config = kriscv.run_config(init_config)
+    final_cterm = CTerm(final_config)
+
+    # Then
+    assert final_cterm.cell('INSTRS_CELL') == KSequence(KApply('#HALT'), KApply('#EXECUTE'))
+
+
+@pytest.fixture
+def build_config_for_binary(
+    tools: Callable[[str], Tools],
+) -> Callable[[Path], BuildConfig]:
+    def result(bin_file: Path) -> BuildConfig:
+        toolchain = bin_file.name.split('-')[-1]
+        match toolchain:
+            case 'risc0':
+                return RISC0_CONFIG
+            case 'sp1':
+                return SP1_CONFIG
+            case _:
+                raise AssertionError()
+
+    return result
 
 
 MAX_DEPTH: Final = 1000
