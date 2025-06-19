@@ -54,6 +54,9 @@ GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str
     ('sload-test-sp1', SP1_CONFIG, 'sload-test', {}, ['KEY', 'VALUE']),
     ('sstore-test-sp1', SP1_CONFIG, 'sstore-test', {}, ['KEY', 'VALUE']),
     # ...
+    ('tload-test-sp1', SP1_CONFIG, 'tload-test', {}, ['KEY', 'VALUE']),
+    ('tstore-test-sp1', SP1_CONFIG, 'tstore-test', {}, ['KEY', 'VALUE']),
+    # 0x5e MCOPY
     ('push0-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x5f', 'arity': '0', 'value': '[]'}, []),
     ('push1-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x60', 'arity': '1', 'value': '[0x01]'}, ['OP0']),
     ('push2-test-sp1', SP1_CONFIG, 'push-test', {'opcode': '0x61', 'arity': '2', 'value': '[0x00, 0x01]'}, ['OP0']),
