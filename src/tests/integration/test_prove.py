@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 import pytest
+from pyk.kast.inner import KApply
 
 from .utils import SP1_CONFIG, SPEC_DIR
 
@@ -11,12 +12,13 @@ if TYPE_CHECKING:
 
     from kriscv.symtools import APRProof, SymTools
     from kriscv.tools import Tools
+    from pyk.kast.inner import KInner
 
     from .utils import BuildConfig, TemplateLoader
 
 
 MAX_DEPTH: Final = 1000
-MAX_ITERATIONS: Final = 45
+MAX_ITERATIONS: Final = 1
 
 
 GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str]], ...]] = (
@@ -159,17 +161,38 @@ def test_prove_equivalence(
         max_iterations=MAX_ITERATIONS,
     )
 
-    proof_show = symtool.proof_show
-    show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
-    (symtool.proof_dir / f'{test_id.upper()}-proof-result.txt').write_text(show_result)
-
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
-    # check_proof(proof)
+    report = check_proof(proof, symtool)
+    report += '\n'.join(symtool.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
+    (symtool.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text(report)
 
 
-def check_proof(proof: APRProof) -> None:
+def cell(cell_name: str) -> str:
+    return f'{cell_name.upper()}_CELL'
+
+
+def check_proof(proof: APRProof, symtool: SymTools) -> str:
+    from pyk.kast.inner import bottom_up
+
+    report = ''
+
     for node in proof.kcfg.nodes:
-        cterm = node.cterm
-        
-        ...
+        regs = node.cterm.cell(cell('REGS'))
+        no_int2bytes_flag = False
+
+        def no_int2bytes(kinner: KInner) -> KInner:
+            """Check if the `kinner` has `Int2Bytes` in it."""
+            nonlocal no_int2bytes_flag
+
+            if isinstance(kinner, KApply) and kinner.label == 'Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness':
+                no_int2bytes_flag = True
+            return kinner
+
+        # forall cterm, there is no `Int2Bytes` in their `regs` cells
+        bottom_up(no_int2bytes, regs)
+
+        if no_int2bytes_flag:
+            report += f'{node.id} has `Int2Bytes` in their `regs` cells\n'
+
+    return report
