@@ -172,27 +172,32 @@ def cell(cell_name: str) -> str:
     return f'{cell_name.upper()}_CELL'
 
 
+def collect_int2bytes(term: KInner) -> list[KInner]:
+    """Collect all `Int2Bytes` in the term."""
+    from pyk.kast.inner import collect
+
+    int2bytes_list: list[KInner] = []
+
+    def _collect_int2bytes(kinner: KInner) -> None:
+        if isinstance(kinner, KApply) and kinner.label == 'Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness':
+            int2bytes_list.append(kinner)
+
+    collect(_collect_int2bytes, term)
+    return int2bytes_list
+
+
 def check_proof(proof: APRProof, symtool: SymTools) -> str:
-    from pyk.kast.inner import bottom_up
+    from kriscv.symtools import _APRProofShow
 
     report = ''
+    show = _APRProofShow(symtool.kprove)
 
     for node in proof.kcfg.nodes:
-        regs = node.cterm.cell(cell('REGS'))
-        no_int2bytes_flag = False
-
-        def no_int2bytes(kinner: KInner) -> KInner:
-            """Check if the `kinner` has `Int2Bytes` in it."""
-            nonlocal no_int2bytes_flag
-
-            if isinstance(kinner, KApply) and kinner.label == 'Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness':
-                no_int2bytes_flag = True
-            return kinner
-
         # forall cterm, there is no `Int2Bytes` in their `regs` cells
-        bottom_up(no_int2bytes, regs)
-
-        if no_int2bytes_flag:
-            report += f'{node.id} has `Int2Bytes` in their `regs` cells\n'
+        regs = node.cterm.cell(cell('REGS'))
+        int2bytes_list = collect_int2bytes(regs)
+        while int2bytes_list:
+            int2bytes = int2bytes_list.pop()
+            report += f'{node.id} has `Int2Bytes` in their `regs` cells: {show._print(int2bytes)}\n'
 
     return report
