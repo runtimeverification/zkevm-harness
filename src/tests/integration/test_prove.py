@@ -174,13 +174,14 @@ def cell(cell_name: str) -> str:
 
 def collect_int2bytes(term: KInner) -> list[KInner]:
     """Collect all `Int2Bytes` in the term."""
-    from pyk.kast.inner import collect
+    from pyk.kast.inner import collect, KLabel
 
     int2bytes_list: list[KInner] = []
 
     def _collect_int2bytes(kinner: KInner) -> None:
-        if isinstance(kinner, KApply) and kinner.label == 'Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness':
-            int2bytes_list.append(kinner)
+        match kinner:
+            case KApply(KLabel('Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness')):
+                int2bytes_list.append(kinner)
 
     collect(_collect_int2bytes, term)
     return int2bytes_list
