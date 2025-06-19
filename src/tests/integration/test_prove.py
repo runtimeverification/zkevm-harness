@@ -49,6 +49,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('sar-test', 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
     ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
     # ...
+    ('blobbasefee-test', 'blobbasefee-test', {}, ['VALUE']),
     ('pop-test', 'pop-test', {}, ['VALUE']),
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
@@ -77,6 +78,7 @@ GEN_CLAIM_TEST_DATA: Final = tuple(
     (f'{test_id}-sp1', SP1_CONFIG, project_name, context, symbolic_names)
     for test_id, project_name, context, symbolic_names in TEMPLATE_DATA
 )
+
 
 
 @pytest.mark.skip
