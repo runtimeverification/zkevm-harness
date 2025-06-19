@@ -9,7 +9,7 @@ from .utils import SP1_CONFIG, SPEC_DIR
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from kriscv.symtools import SymTools
+    from kriscv.symtools import APRProof, SymTools
     from kriscv.tools import Tools
 
     from .utils import BuildConfig, TemplateLoader
@@ -165,3 +165,11 @@ def test_prove_equivalence(
 
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
+    # check_proof(proof)
+
+
+def check_proof(proof: APRProof) -> None:
+    for node in proof.kcfg.nodes:
+        cterm = node.cterm
+        
+        ...
