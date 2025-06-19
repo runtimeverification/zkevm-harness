@@ -43,7 +43,7 @@ def custom_temp_dir(request: pytest.FixtureRequest) -> Path:
 
 
 @pytest.fixture
-def enable_bug_report(request: pytest.FixtureRequest) -> bool:
+def save_bug_report(request: pytest.FixtureRequest) -> bool:
     return request.config.getoption('--save-bug-report')
 
 
@@ -66,7 +66,7 @@ def tools(custom_temp_dir: Path) -> Callable[[str], Tools]:
 
 
 @pytest.fixture
-def symtools(custom_temp_dir: Path, enable_bug_report: bool) -> Callable[[str, str], SymTools]:
+def symtools(custom_temp_dir: Path, save_bug_report: bool) -> Callable[[str, str], SymTools]:
     def _symtools(haskell_target: str, llvm_target: str) -> SymTools:
         temp_dir = custom_temp_dir / 'proofs'
         temp_dir.mkdir(exist_ok=True)
@@ -75,7 +75,7 @@ def symtools(custom_temp_dir: Path, enable_bug_report: bool) -> Callable[[str, s
             haskell_dir=kdist.get(haskell_target),
             llvm_lib_dir=kdist.get(llvm_target),
             proof_dir=temp_dir,
-            bug_report=bug_report_arg(custom_temp_dir / 'debug') if enable_bug_report else None,
+            bug_report=bug_report_arg(custom_temp_dir / 'debug') if save_bug_report else None,
         )
 
     return _symtools
