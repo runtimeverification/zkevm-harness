@@ -29,7 +29,7 @@ CONCRETE_TEST_DATA: Final[tuple[tuple[str, str, BuildConfig, dict[str, str], byt
     CONCRETE_TEST_DATA,
     ids=[test_id for test_id, *_ in CONCRETE_TEST_DATA],
 )
-def test_concrete(
+def test_build_and_interpret(
     tools: Callable[[str], Tools],
     load_template: TemplateLoader,
     test_id: str,
