@@ -163,9 +163,7 @@ def test_prove_equivalence(
 
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
-    report = check_proof(proof, symtool)
-    report += '\n'.join(symtool.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
-    (symtool.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text(report)
+    generate_report(proof, symtool, test_id)
 
 
 def collect_int2bytes(term: KInner) -> list[KInner]:
@@ -183,7 +181,7 @@ def collect_int2bytes(term: KInner) -> list[KInner]:
     return int2bytes_list
 
 
-def check_proof(proof: APRProof, symtool: SymTools) -> str:
+def generate_report(proof: APRProof, symtool: SymTools, test_id: str) -> None:
     from kriscv.utils import kast_print
 
     report: list[str] = []
@@ -197,4 +195,6 @@ def check_proof(proof: APRProof, symtool: SymTools) -> str:
                 f'{node.id} has `Int2Bytes` in their `regs` cells: {kast_print(int2bytes, kprint=symtool.kprove)}'
             )
 
-    return '\n'.join(report)
+    report.extend(symtool.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
+
+    (symtool.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text('\n'.join(report))
