@@ -17,6 +17,7 @@ TEST_DATA_DIR: Final = (Path(__file__).parent / 'test-data').resolve(strict=True
 DEPS_DIR: Final = (Path(__file__).parents[3] / 'deps').resolve(strict=True)
 TEMPLATE_DIR: Final = TEST_DATA_DIR / 'templates'
 SPEC_DIR: Final = TEST_DATA_DIR / 'specs'
+BINARY_DIR: Final = TEST_DATA_DIR / 'binaries'
 
 RISC0_VERSION: Final = (DEPS_DIR / 'risc0_release').read_text().rstrip()
 SP1_VERSION: Final = (DEPS_DIR / 'sp1_release').read_text().rstrip()
@@ -134,7 +135,7 @@ def build_elf(
     build_config: BuildConfig,
     *,
     context: dict[str, str] | None = None,
-) -> ELF:
+) -> Path:
     """
     Load the template from `templates/project_name` and build the ELF file according to the build configuration.
     Args:
@@ -143,10 +144,8 @@ def build_elf(
         build_config: The build configuration to use.
         context: Context for template instantiation
     Returns:
-        The parsed ELF.
+        The compiled ELF file.
     """
-    from kriscv.elf_parser import ELF
-
     project_dir = load_template(
         template_name=project_name,
         context={
@@ -158,5 +157,4 @@ def build_elf(
 
     run_process_2(build_config.build_cmd, cwd=project_dir)
     elf_file = project_dir / build_config.elf_path / project_name
-    elf = ELF.load(elf_file)
-    return elf
+    return elf_file

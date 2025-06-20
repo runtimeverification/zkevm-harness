@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+from kriscv.elf_parser import ELF
 
 from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, filter_symbols, get_symbol_value
 
@@ -28,7 +29,7 @@ CONCRETE_TEST_DATA: Final[tuple[tuple[str, str, BuildConfig, dict[str, str], byt
     CONCRETE_TEST_DATA,
     ids=[test_id for test_id, *_ in CONCRETE_TEST_DATA],
 )
-def test_concrete(
+def test_build_and_interpret(
     tools: Callable[[str], Tools],
     load_template: TemplateLoader,
     test_id: str,
@@ -38,7 +39,8 @@ def test_concrete(
     expected: bytes,
 ) -> None:
     # Given
-    elf = build_elf(project_name, load_template, build_config, context=context)
+    elf_file = build_elf(project_name, load_template, build_config, context=context)
+    elf = ELF.load(elf_file)
     result = elf.unique_symbol('RESULT')
     (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
     kriscv = tools(build_config.target)
