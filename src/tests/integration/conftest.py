@@ -23,6 +23,12 @@ def pytest_addoption(parser: Parser) -> None:
         type=Path,
         help='Directory to save temporary files',
     )
+    parser.addoption(
+        '--save-bug-report',
+        type=bool,
+        default=False,
+        help='Generate bug report in the temporary directory',
+    )
 
 
 @pytest.fixture
@@ -34,6 +40,11 @@ def custom_temp_dir(request: pytest.FixtureRequest) -> Path:
         temp_dir.mkdir(parents=True, exist_ok=True)
         return temp_dir
     return request.getfixturevalue('tmp_path')
+
+
+@pytest.fixture
+def save_bug_report(request: pytest.FixtureRequest) -> bool:
+    return request.config.getoption('--save-bug-report')
 
 
 @pytest.fixture
@@ -55,18 +66,16 @@ def tools(custom_temp_dir: Path) -> Callable[[str], Tools]:
 
 
 @pytest.fixture
-def symtools(custom_temp_dir: Path) -> Callable[[str, str], SymTools]:
+def symtools(custom_temp_dir: Path, save_bug_report: bool) -> Callable[[str, str], SymTools]:
     def _symtools(haskell_target: str, llvm_target: str) -> SymTools:
         temp_dir = custom_temp_dir / 'proofs'
-        debug_dir = custom_temp_dir / 'debug'
         temp_dir.mkdir(exist_ok=True)
-        debug_dir.mkdir(exist_ok=True)
 
         return SymTools(
             haskell_dir=kdist.get(haskell_target),
             llvm_lib_dir=kdist.get(llvm_target),
             proof_dir=temp_dir,
-            bug_report=bug_report_arg(debug_dir),
+            bug_report=bug_report_arg(custom_temp_dir / 'debug') if save_bug_report else None,
         )
 
     return _symtools
