@@ -168,13 +168,9 @@ def test_prove_equivalence(
     (symtool.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text(report)
 
 
-def cell(cell_name: str) -> str:
-    return f'{cell_name.upper()}_CELL'
-
-
 def collect_int2bytes(term: KInner) -> list[KInner]:
     """Collect all `Int2Bytes` in the term."""
-    from pyk.kast.inner import collect, KLabel
+    from pyk.kast.inner import KLabel, collect
 
     int2bytes_list: list[KInner] = []
 
@@ -188,17 +184,18 @@ def collect_int2bytes(term: KInner) -> list[KInner]:
 
 
 def check_proof(proof: APRProof, symtool: SymTools) -> str:
-    from kriscv.symtools import _APRProofShow
+    from kriscv.utils import kast_print
 
-    report = ''
-    show = _APRProofShow(symtool.kprove)
+    report: list[str] = []
 
     for node in proof.kcfg.nodes:
         # forall cterm, there is no `Int2Bytes` in their `regs` cells
-        regs = node.cterm.cell(cell('REGS'))
+        regs = node.cterm.cell('REGS_CELL')
         int2bytes_list = collect_int2bytes(regs)
         while int2bytes_list:
             int2bytes = int2bytes_list.pop()
-            report += f'{node.id} has `Int2Bytes` in their `regs` cells: {show._print(int2bytes)}\n'
+            report.append(
+                f'{node.id} has `Int2Bytes` in their `regs` cells: {kast_print(int2bytes, kprint=symtool.kprove)}'
+            )
 
-    return report
+    return '\n'.join(report)
