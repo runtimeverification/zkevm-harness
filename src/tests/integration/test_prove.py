@@ -192,8 +192,7 @@ def check_proof(proof: APRProof, symtool: SymTools) -> str:
         # forall cterm, there is no `Int2Bytes` in their `regs` cells
         regs = node.cterm.cell('REGS_CELL')
         int2bytes_list = collect_int2bytes(regs)
-        while int2bytes_list:
-            int2bytes = int2bytes_list.pop()
+        for int2bytes in int2bytes_list:
             report.append(
                 f'{node.id} has `Int2Bytes` in their `regs` cells: {kast_print(int2bytes, kprint=symtool.kprove)}'
             )
