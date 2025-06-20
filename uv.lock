@@ -643,8 +643,8 @@ wheels = [
 
 [[package]]
 name = "kriscv"
-version = "0.1.110"
-source = { git = "https://github.com/runtimeverification/riscv-semantics.git?rev=v0.1.110#ddf28113982f8f080e152bdda7b231ce247d1dbd" }
+version = "0.1.111"
+source = { git = "https://github.com/runtimeverification/riscv-semantics.git?rev=v0.1.111#efe1f781ff627d43bb4c0bb25e933910c6b512bb" }
 dependencies = [
     { name = "filelock" },
     { name = "kframework" },
@@ -1525,7 +1525,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "kriscv", git = "https://github.com/runtimeverification/riscv-semantics.git?rev=v0.1.110" }]
+requires-dist = [{ name = "kriscv", git = "https://github.com/runtimeverification/riscv-semantics.git?rev=v0.1.111" }]
 
 [package.metadata.requires-dev]
 dev = [
