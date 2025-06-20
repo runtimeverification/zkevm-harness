@@ -68,7 +68,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0x41 COINBASE
     ('timestamp-test', 'host-property-u256-test', {'opcode': '0x42', 'property': 'env.block.timestamp'}, ['VALUE']),
     ('number-test', 'host-property-u256-test', {'opcode': '0x43', 'property': 'env.block.number'}, ['VALUE']),
-    # 0x44 PREVRANDAO
+    ('prevrandao-test', 'prevrandao-test', {}, ['VALUE']),
     ('gaslimit-test', 'host-property-u256-test', {'opcode': '0x45', 'property': 'env.block.gas_limit'}, ['VALUE']),
     ('chainid-test', 'chainid-test', {}, ['VALUE']),
     # 0x47 SELFBALANCE - Skip: no real implementation in DummyHost
