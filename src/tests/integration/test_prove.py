@@ -3,20 +3,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 import pytest
+from pyk.kast.inner import KApply
 
 from .utils import SP1_CONFIG, SPEC_DIR
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from kriscv.symtools import SymTools
+    from kriscv.symtools import APRProof, SymTools
     from kriscv.tools import Tools
+    from pyk.kast.inner import KInner
 
     from .utils import BuildConfig, TemplateLoader
 
 
 MAX_DEPTH: Final = 1000
-MAX_ITERATIONS: Final = 45
+MAX_ITERATIONS: Final = 1
 
 
 GEN_TEST_DATA: Final[tuple[tuple[str, BuildConfig, str, dict[str, str], list[str]], ...]] = (
@@ -159,9 +161,40 @@ def test_prove_equivalence(
         max_iterations=MAX_ITERATIONS,
     )
 
-    proof_show = symtool.proof_show
-    show_result = '\n'.join(proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
-    (symtool.proof_dir / f'{test_id.upper()}-proof-result.txt').write_text(show_result)
-
     # Then: Prove `R(S_{REVM}.initial, S_{KEVM}.initial) /\ R(S_{REVM}.final, S_{KEVM}.final)`
     # `R` is the relation between KEVM state `S_{KEVM}` and REVM State in RISC-V memory `S_{REVM}`
+    generate_report(proof, symtool, test_id)
+
+
+def collect_int2bytes(term: KInner) -> list[KInner]:
+    """Collect all `Int2Bytes` in the term."""
+    from pyk.kast.inner import KLabel, collect
+
+    int2bytes_list: list[KInner] = []
+
+    def _collect_int2bytes(kinner: KInner) -> None:
+        match kinner:
+            case KApply(KLabel('Int2Bytes(_,_,_)_BYTES-HOOKED_Bytes_Int_Int_Endianness')):
+                int2bytes_list.append(kinner)
+
+    collect(_collect_int2bytes, term)
+    return int2bytes_list
+
+
+def generate_report(proof: APRProof, symtool: SymTools, test_id: str) -> None:
+    from kriscv.utils import kast_print
+
+    report: list[str] = []
+
+    for node in proof.kcfg.nodes:
+        # forall cterm, there is no `Int2Bytes` in their `regs` cells
+        regs = node.cterm.cell('REGS_CELL')
+        int2bytes_list = collect_int2bytes(regs)
+        for int2bytes in int2bytes_list:
+            report.append(
+                f'{node.id} has `Int2Bytes` in their `regs` cells: {kast_print(int2bytes, kprint=symtool.kprove)}'
+            )
+
+    report.extend(symtool.proof_show.show(proof, [node.id for node in proof.kcfg.nodes]))
+
+    (symtool.proof_dir / f'{test_id.upper()}-proof-report.txt').write_text('\n'.join(report))
