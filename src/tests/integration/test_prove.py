@@ -59,7 +59,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('number-test', 'host-property-u256-test', {'opcode': '0x43', 'property': 'env.block.number'}, ['VALUE']),
     # 0x44 PREVRANDAO
     ('gaslimit-test', 'host-property-u256-test', {'opcode': '0x45', 'property': 'env.block.gas_limit'}, ['VALUE']),
-    # 0x46 CHAINID
+    ('chainid-test', 'chainid-test', {}, ['VALUE']),
     # 0x47 SELFBALANCE
     ('basefee-test', 'host-property-u256-test', {'opcode': '0x48', 'property': 'env.block.basefee'}, ['VALUE']),
     ('blobhash-test', 'blobhash-test', {}, ['INDEX', 'VALUE']),
