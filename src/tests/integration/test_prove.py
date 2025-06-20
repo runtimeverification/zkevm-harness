@@ -49,6 +49,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('sar-test', 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
     ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
     # ...
+    ('blobhash-test', 'blobhash-test', {}, ['INDEX', 'VALUE']),
     ('blobbasefee-test', 'blobbasefee-test', {}, ['VALUE']),
     ('pop-test', 'pop-test', {}, ['VALUE']),
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
