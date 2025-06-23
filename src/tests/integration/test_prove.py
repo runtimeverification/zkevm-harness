@@ -48,7 +48,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('shr-test', 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
     ('sar-test', 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
     ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
-    # 0x30 ADDRESS
+    ('address-test', 'address-test', {}, ['VALUE']),
     # 0x31 BALANCE - Skip: no real implementation in DummyHost
     # 0x32 ORIGIN
     # 0x33 CALLER
