@@ -51,7 +51,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('address-test', 'address-test', {}, ['VALUE']),
     # 0x31 BALANCE - Skip: no real implementation in DummyHost
     ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
-    # 0x33 CALLER
+    ('caller-test', 'caller-test', {}, ['VALUE']),
     # 0x34 CALLVALUE
     # 0x35 CALLDATALOAD
     # 0x36 CALLDATASIZE
