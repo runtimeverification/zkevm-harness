@@ -50,7 +50,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
     ('address-test', 'address-test', {}, ['VALUE']),
     # 0x31 BALANCE - Skip: no real implementation in DummyHost
-    # 0x32 ORIGIN
+    ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
     # 0x33 CALLER
     # 0x34 CALLVALUE
     # 0x35 CALLDATALOAD
@@ -65,7 +65,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0x3e RETURNDATACOPY
     # 0x3f EXTCODEHASH - Skip: no real implementation in DummyHost
     # 0x40 BLOCKHASH - Skip: no real implementation in DummyHost
-    # 0x41 COINBASE
+    ('coinbase-test', 'host-property-address-test', {'opcode': '0x41', 'property': 'env.block.coinbase'}, ['VALUE']),
     ('timestamp-test', 'host-property-u256-test', {'opcode': '0x42', 'property': 'env.block.timestamp'}, ['VALUE']),
     ('number-test', 'host-property-u256-test', {'opcode': '0x43', 'property': 'env.block.number'}, ['VALUE']),
     ('prevrandao-test', 'prevrandao-test', {}, ['VALUE']),
@@ -82,7 +82,10 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('sload-test', 'sload-test', {}, ['KEY', 'VALUE']),
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
     # 0x56 JUMP
-    # ...
+    # 0x57 JUMPI
+    # 0x58 PC
+    # 0x59 MSIZE
+    # 0x5a GAS
     # 0x5b JUMPDEST
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
     ('tstore-test', 'tstore-test', {}, ['KEY', 'VALUE']),
@@ -100,7 +103,19 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('swap3-test', 'swap-test', {'opcode': '0x92', 'n': '3'}, ['OP0', 'OP1']),
     ('swap4-test', 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
     # 0xa0 LOG0
-    # ...
+    # 0xa1 LOG1
+    # 0xa2 LOG2
+    # 0xa3 LOG3
+    # 0xa4 LOG4
+    # 0xf0 CREATE
+    # 0xf1 CALL
+    # 0xf2 CALLCODE
+    # 0xf3 RETURN
+    # 0xf4 DELEGATECALL
+    # 0xf5 CREATE2
+    # 0xfa STATICCALL
+    # 0xfd REVERT
+    # 0xfe INVALID
     # 0xff SELFDESTRUCT
 )
 
