@@ -68,7 +68,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0x3b EXTCODESIZE - Skip: no real implementation in DummyHost
     # 0x3c EXTCODECOPY - Skip: no real implementation in DummyHost
     # 0x3d RETURNDATASIZE
-    # 0x3e RETURNDATACOPY
+    (
+        'returndatacopy-test',
+        'returndatacopy-test',
+        {},
+        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
+    ),
     # 0x3f EXTCODEHASH - Skip: no real implementation in DummyHost
     # 0x40 BLOCKHASH - Skip: no real implementation in DummyHost
     ('coinbase-test', 'host-property-address-test', {'opcode': '0x41', 'property': 'env.block.coinbase'}, ['VALUE']),
