@@ -48,13 +48,42 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('shr-test', 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
     ('sar-test', 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
     ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
-    # ...
+    # 0x30 ADDRESS
+    # 0x31 BALANCE - Skip: no real implementation in DummyHost
+    # 0x32 ORIGIN
+    # 0x33 CALLER
+    # 0x34 CALLVALUE
+    # 0x35 CALLDATALOAD
+    # 0x36 CALLDATASIZE
+    # 0x37 CALLDATACOPY
+    # 0x38 CODESIZE
+    # 0x39 CODECOPY
+    ('gasprice-test', 'host-property-u256-test', {'opcode': '0x3a', 'property': 'env.tx.gas_price'}, ['VALUE']),
+    # 0x3b EXTCODESIZE - Skip: no real implementation in DummyHost
+    # 0x3c EXTCODECOPY - Skip: no real implementation in DummyHost
+    # 0x3d RETURNDATASIZE
+    # 0x3e RETURNDATACOPY
+    # 0x3f EXTCODEHASH - Skip: no real implementation in DummyHost
+    # 0x40 BLOCKHASH - Skip: no real implementation in DummyHost
+    # 0x41 COINBASE
+    ('timestamp-test', 'host-property-u256-test', {'opcode': '0x42', 'property': 'env.block.timestamp'}, ['VALUE']),
+    ('number-test', 'host-property-u256-test', {'opcode': '0x43', 'property': 'env.block.number'}, ['VALUE']),
+    ('prevrandao-test', 'prevrandao-test', {}, ['VALUE']),
+    ('gaslimit-test', 'host-property-u256-test', {'opcode': '0x45', 'property': 'env.block.gas_limit'}, ['VALUE']),
+    ('chainid-test', 'chainid-test', {}, ['VALUE']),
+    # 0x47 SELFBALANCE - Skip: no real implementation in DummyHost
+    ('basefee-test', 'host-property-u256-test', {'opcode': '0x48', 'property': 'env.block.basefee'}, ['VALUE']),
+    ('blobhash-test', 'blobhash-test', {}, ['INDEX', 'VALUE']),
+    ('blobbasefee-test', 'blobbasefee-test', {}, ['VALUE']),
+    ('pop-test', 'pop-test', {}, ['VALUE']),
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
     ('mstore8-test', 'mstore8-test', {}, ['OFFSET', 'VALUE']),
     ('sload-test', 'sload-test', {}, ['KEY', 'VALUE']),
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
+    # 0x56 JUMP
     # ...
+    # 0x5b JUMPDEST
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
     ('tstore-test', 'tstore-test', {}, ['KEY', 'VALUE']),
     # 0x5e MCOPY
@@ -70,6 +99,9 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('swap2-test', 'swap-test', {'opcode': '0x91', 'n': '2'}, ['OP0', 'OP1']),
     ('swap3-test', 'swap-test', {'opcode': '0x92', 'n': '3'}, ['OP0', 'OP1']),
     ('swap4-test', 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
+    # 0xa0 LOG0
+    # ...
+    # 0xff SELFDESTRUCT
 )
 
 GEN_CLAIM_TEST_DATA: Final = tuple(
