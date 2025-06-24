@@ -54,8 +54,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('caller-test', 'caller-test', {}, ['VALUE']),
     ('callvalue-test', 'callvalue-test', {}, ['VALUE']),
     # 0x35 CALLDATALOAD
-    # 0x36 CALLDATASIZE
-    # 0x37 CALLDATACOPY
+    ('calldatasize-test', 'calldatasize-test', {}, ['DATA', 'DATA_SIZE']),
     (
         'calldatacopy-test',
         'calldatacopy-test',
