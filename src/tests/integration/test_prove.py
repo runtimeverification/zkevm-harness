@@ -56,6 +56,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0x35 CALLDATALOAD
     # 0x36 CALLDATASIZE
     # 0x37 CALLDATACOPY
+    (
+        'calldatacopy-test',
+        'calldatacopy-test',
+        {},
+        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
+    ),
     # 0x38 CODESIZE
     # 0x39 CODECOPY
     ('gasprice-test', 'host-property-u256-test', {'opcode': '0x3a', 'property': 'env.tx.gas_price'}, ['VALUE']),
