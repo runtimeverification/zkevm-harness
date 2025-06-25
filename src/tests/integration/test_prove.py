@@ -53,7 +53,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
     ('caller-test', 'caller-test', {}, ['VALUE']),
     ('callvalue-test', 'callvalue-test', {}, ['VALUE']),
-    # 0x35 CALLDATALOAD
+    ('calldataload-test', 'calldataload-test', {}, ['DATA', 'DATA_SIZE', 'LOAD_INDEX', 'INDEX']),
     ('calldatasize-test', 'calldatasize-test', {}, ['DATA', 'DATA_SIZE']),
     (
         'calldatacopy-test',
