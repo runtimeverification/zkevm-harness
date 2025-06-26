@@ -97,7 +97,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0x57 JUMPI
     # 0x58 PC
     ('msize-test', 'msize-test', {}, ['SIZE']),
-    # 0x5a GAS
+    ('gas-test', 'gas-test', {}, ['GAS_LIMIT']),
     # 0x5b JUMPDEST
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
     ('tstore-test', 'tstore-test', {}, ['KEY', 'VALUE']),
