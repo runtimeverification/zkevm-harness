@@ -62,7 +62,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
     ),
     ('codesize-test', 'codesize-test', {}, ['CODE', 'CODE_SIZE']),
-    # 0x39 CODECOPY
+    ('codecopy-test', 'codecopy-test', {}, ['CODE', 'CODE_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX']),
     ('gasprice-test', 'host-property-u256-test', {'opcode': '0x3a', 'property': 'env.tx.gas_price'}, ['VALUE']),
     # 0x3b EXTCODESIZE - Skip: no real implementation in DummyHost
     # 0x3c EXTCODECOPY - Skip: no real implementation in DummyHost
