@@ -127,7 +127,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0xf5 CREATE2
     # 0xfa STATICCALL
     # 0xfd REVERT
-    # 0xfe INVALID
+    ('invalid-test', 'invalid-test', {}, []),
     # 0xff SELFDESTRUCT
 )
 
