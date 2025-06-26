@@ -81,7 +81,9 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
     ('mstore8-test', 'mstore8-test', {}, ['OFFSET', 'VALUE']),
     ('sload-test', 'sload-test', {}, ['KEY', 'VALUE']),
+    ('sload-concrete-key-test', 'sload-test', {}, ['VALUE']),
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
+    ('sstore-concrete-key-test', 'sstore-test', {}, ['VALUE']),
     # 0x56 JUMP
     # 0x57 JUMPI
     # 0x58 PC
@@ -89,7 +91,9 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0x5a GAS
     # 0x5b JUMPDEST
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
+    ('tload-concrete-key-test', 'tload-test', {}, ['VALUE']),
     ('tstore-test', 'tstore-test', {}, ['KEY', 'VALUE']),
+    ('tstore-concrete-key-test', 'tstore-test', {}, ['VALUE']),
     # 0x5e MCOPY
     ('push0-test', 'push-test', {'opcode': '0x5f', 'arity': '0', 'value': '[]'}, []),
     ('push1-test', 'push-test', {'opcode': '0x60', 'arity': '1', 'value': '[0x01]'}, ['OP0']),
