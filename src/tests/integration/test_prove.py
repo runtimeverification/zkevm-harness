@@ -122,11 +122,21 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     # 0xf0 CREATE
     # 0xf1 CALL
     # 0xf2 CALLCODE
-    # 0xf3 RETURN
+    (
+        'return-test',
+        'return-with-output-test',
+        {'opcode': '0xf3', 'instruction_result': 'Return'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
+    ),
     # 0xf4 DELEGATECALL
     # 0xf5 CREATE2
     # 0xfa STATICCALL
-    # 0xfd REVERT
+    (
+        'revert-test',
+        'return-with-output-test',
+        {'opcode': '0xfd', 'instruction_result': 'Revert'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
+    ),
     ('invalid-test', 'invalid-test', {}, []),
     # 0xff SELFDESTRUCT
 )
