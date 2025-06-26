@@ -77,6 +77,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('blobbasefee-test', 'blobbasefee-test', {}, ['VALUE']),
     ('pop-test', 'pop-test', {}, ['VALUE']),
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
+    ('mload-concrete-offset-test', 'mload-test', {}, ['VALUE']),
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
     ('mstore8-test', 'mstore8-test', {}, ['OFFSET', 'VALUE']),
     ('sload-test', 'sload-test', {}, ['KEY', 'VALUE']),
@@ -233,8 +234,8 @@ def build_config_for_binary(
     return result
 
 
-MAX_DEPTH: Final = 1000
-MAX_ITERATIONS: Final = 1
+MAX_DEPTH: Final = 100
+MAX_ITERATIONS: Final = 4000
 
 SPEC_FILES: Final = tuple(SPEC_DIR.glob('*.k'))
 
@@ -257,6 +258,7 @@ def test_symbolic(
         claim_id=spec_file.stem,
         max_depth=MAX_DEPTH,
         max_iterations=MAX_ITERATIONS,
+        optimize_kcfg=True,
     )
 
     # Then
