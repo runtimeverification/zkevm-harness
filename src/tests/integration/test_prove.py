@@ -79,6 +79,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
     ('mload-concrete-offset-test', 'mload-test', {}, ['VALUE']),
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
+    ('mstore-concrete-offset-test', 'mstore-test', {}, ['VALUE']),
     ('mstore8-test', 'mstore8-test', {}, ['OFFSET', 'VALUE']),
     ('sload-test', 'sload-test', {}, ['KEY', 'VALUE']),
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
