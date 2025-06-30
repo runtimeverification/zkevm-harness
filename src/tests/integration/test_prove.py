@@ -114,11 +114,31 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('swap2-test', 'swap-test', {'opcode': '0x91', 'n': '2'}, ['OP0', 'OP1']),
     ('swap3-test', 'swap-test', {'opcode': '0x92', 'n': '3'}, ['OP0', 'OP1']),
     ('swap4-test', 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
-    # 0xa0 LOG0
-    # 0xa1 LOG1
-    # 0xa2 LOG2
-    # 0xa3 LOG3
-    # 0xa4 LOG4
+    ('log0-test', 'log-test', {'opcode': '0xa0', 'n_topics': '0'}, ['DATA', 'OFFSET', 'SIZE', 'INDEX']),
+    (
+        'log1-test',
+        'log-test',
+        {'opcode': '0xa1', 'n_topics': '1'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    (
+        'log2-test',
+        'log-test',
+        {'opcode': '0xa2', 'n_topics': '2'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    (
+        'log3-test',
+        'log-test',
+        {'opcode': '0xa3', 'n_topics': '3'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    (
+        'log4-test',
+        'log-test',
+        {'opcode': '0xa4', 'n_topics': '4'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
     # 0xf0 CREATE
     # 0xf1 CALL
     # 0xf2 CALLCODE
