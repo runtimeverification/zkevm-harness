@@ -158,7 +158,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
     ),
     # 0xf4 DELEGATECALL
-    # 0xf5 CREATE2
+    ('create2-test', 'create2-test', {}, ['DATA', 'VALUE', 'OFFSET', 'SIZE', 'SALT', 'INDEX']),
     # 0xfa STATICCALL
     (
         'revert-test',
