@@ -248,7 +248,7 @@ def build_config_for_binary(
     return result
 
 
-MAX_DEPTH: Final = 100
+MAX_DEPTH: Final = 1000
 MAX_ITERATIONS: Final = 4000
 
 SPEC_FILES: Final = tuple(SPEC_DIR.glob('*.k'))
