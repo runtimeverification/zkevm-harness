@@ -77,6 +77,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('blobbasefee-test', 'blobbasefee-test', {}, ['VALUE']),
     ('pop-test', 'pop-test', {}, ['VALUE']),
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
+    ('mload-concrete-offset-test', 'mload-test', {}, ['VALUE']),
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
     ('mstore-concrete-offset-test', 'mstore-test', {}, ['VALUE']),
     ('mstore8-test', 'mstore8-test', {}, ['OFFSET', 'VALUE']),
@@ -235,7 +236,7 @@ def build_config_for_binary(
 
 
 MAX_DEPTH: Final = 100
-MAX_ITERATIONS: Final = 400
+MAX_ITERATIONS: Final = 4000
 
 SPEC_FILES: Final = tuple(SPEC_DIR.glob('*.k'))
 
