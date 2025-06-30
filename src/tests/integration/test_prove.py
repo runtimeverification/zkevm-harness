@@ -148,7 +148,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         {'opcode': '0xa4', 'n_topics': '4'},
         ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
     ),
-    # 0xf0 CREATE
+    ('create-test', 'create-test', {}, ['DATA', 'VALUE', 'OFFSET', 'SIZE', 'INDEX']),
     # 0xf1 CALL
     # 0xf2 CALLCODE
     (
