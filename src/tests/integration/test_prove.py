@@ -99,7 +99,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('sstore-concrete-value-test', 'sstore-test', {}, ['KEY']),
     # 0x56 JUMP
     # 0x57 JUMPI
-    # 0x58 PC
+    ('pc-test', 'pc-test', {}, ['CODE', 'PC']),
     ('msize-test', 'msize-test', {}, ['SIZE']),
     ('gas-test', 'gas-test', {}, ['GAS_LIMIT']),
     # 0x5b JUMPDEST
