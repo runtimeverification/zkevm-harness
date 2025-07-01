@@ -7,11 +7,12 @@ use revm_interpreter::primitives::specification::CancunSpec;
 use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
 
-#[unsafe(no_mangle)]
-pub static mut OPCODE: u8 = 0x51;
+const OPCODE: u8 = 0x51;
+const MEMORY_SIZE: usize = 512;
+const MAX_OFFSET: usize = 255;
 
 #[unsafe(no_mangle)]
-pub static mut OFFSET: u8 = 0x01;
+pub static mut OFFSET: usize = 1;
 
 #[unsafe(no_mangle)]
 pub static mut VALUE: [u8; 32] = [
@@ -19,21 +20,16 @@ pub static mut VALUE: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
 ];
 
-#[unsafe(no_mangle)]
-pub static mut STATE: u8 = 0;
-
-#[unsafe(no_mangle)]
-pub static mut STACK_ADDR: usize = 0;
-
-#[unsafe(no_mangle)]
-pub static mut RESULT: [u8; 32] = [0x00; 32];
-
 fn main() {
     // Given
-    let input = Bytes::from([]);
-    let bytecode = unsafe {
-        Bytecode::new_raw(Bytes::from([OPCODE]))
-    };
+
+    // assume OFFSET <= MAX_OFFSET
+    if unsafe { OFFSET } > MAX_OFFSET {
+        return
+    }
+
+    let input = Bytes::new();
+    let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
     let call_value = U256::ZERO;
@@ -49,29 +45,17 @@ fn main() {
     let gas_limit = 100000;
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
-    unsafe {
-        STACK_ADDR = &interpreter.stack as *const _ as usize;
-    }
+    let Ok(()) = interpreter.stack.push(U256::from(unsafe { OFFSET })) else {
+        panic!()
+    };
 
-    stack_addr_ready();
-
-    unsafe {
-        let Ok(()) = interpreter.stack.push(U256::from(OFFSET)) else {
-            panic!()
-        };
-    }
-
-    stack_ready();
-
-    let mut memory = SharedMemory::with_capacity(512);
-    unsafe {
-        memory.set_u256(usize::from(OFFSET), U256::from_be_bytes(VALUE));
-    }
+    let value = U256::from_be_bytes(unsafe { VALUE });
+    let mut memory = SharedMemory::new();
+    memory.resize(MEMORY_SIZE);
+    memory.set_u256(unsafe { OFFSET }, value);
 
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
-
-    setup_done();
 
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
@@ -80,34 +64,8 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let res = unsafe {
-        interpreter.take_memory().get_u256(usize::from(OFFSET))
+    let Ok(actual_value) = interpreter.stack.pop() else {
+        panic!()
     };
-    unsafe {
-        RESULT = res.to_be_bytes();
-    }
-}
-
-#[unsafe(no_mangle)]
-#[inline(never)]
-fn stack_addr_ready() -> () {
-    unsafe {
-        STATE = 1;
-    }
-}
-
-#[unsafe(no_mangle)]
-#[inline(never)]
-fn stack_ready() -> () {
-    unsafe {
-        STATE = 2;
-    }
-}
-
-#[unsafe(no_mangle)]
-#[inline(never)]
-fn setup_done() -> () {
-    unsafe {
-        STATE = 3;
-    }
+    assert_eq!(actual_value, value);
 }
