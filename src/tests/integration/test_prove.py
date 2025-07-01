@@ -97,12 +97,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
     ('sstore-concrete-key-test', 'sstore-test', {}, ['VALUE']),
     ('sstore-concrete-value-test', 'sstore-test', {}, ['KEY']),
-    # 0x56 JUMP
+    ('jump-test', 'jump-test', {}, ['CODE', 'CODE_SIZE']),
     # 0x57 JUMPI
     ('pc-test', 'pc-test', {}, ['CODE', 'PC']),
     ('msize-test', 'msize-test', {}, ['SIZE']),
     ('gas-test', 'gas-test', {}, ['GAS_LIMIT']),
-    # 0x5b JUMPDEST
+    # 0x5b JUMPDEST -- tested with JUMP and JUMPI
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
     ('tload-concrete-key-test', 'tload-test', {}, ['VALUE']),
     ('tload-concrete-value-test', 'tload-test', {}, ['KEY']),
