@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 
 
 CONCRETE_TEST_DATA: Final[tuple[tuple[str, str, BuildConfig, dict[str, str]], ...]] = (
-    ('risc0-add', 'simple-2-op-test', RISC0_CONFIG, {'opcode': '0x01'}),
-    ('sp1-add', 'simple-2-op-test', SP1_CONFIG, {'opcode': '0x01'}),
+    ('risc0-add', 'simple-2-op-test', RISC0_CONFIG, {'opcode': '0x01', 'expected': 'op1.wrapping_add(op0)'}),
+    ('sp1-add', 'simple-2-op-test', SP1_CONFIG, {'opcode': '0x01', 'expected': 'op1.wrapping_add(op0)'}),
     ('risc0-sstore', 'sstore-test', RISC0_CONFIG, {}),
     ('sp1-sstore', 'sstore-test', SP1_CONFIG, {}),
 )
