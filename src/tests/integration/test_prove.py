@@ -82,8 +82,8 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         },
         ['OP0', 'OP1'],
     ),
-    ('addmod-test', 'simple-3-op-test', {'opcode': '0x08'}, ['OP0', 'OP1', 'OP2']),
-    ('mulmod-test', 'simple-3-op-test', {'opcode': '0x09'}, ['OP0', 'OP1', 'OP2']),
+    ('addmod-test', 'simple-3-op-test', {'opcode': '0x08', 'expected': 'op2.add_mod(op1, op0)'}, ['OP0', 'OP1', 'OP2']),
+    ('mulmod-test', 'simple-3-op-test', {'opcode': '0x09', 'expected': 'op2.mul_mod(op1, op0)'}, ['OP0', 'OP1', 'OP2']),
     (
         'exp-test',
         'simple-2-op-test',
