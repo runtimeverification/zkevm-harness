@@ -7,24 +7,20 @@ use revm_interpreter::primitives::specification::CancunSpec;
 use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
 
-const N: u8 = {{ n }};
-const OPCODE: u8 = {{ opcode }};
+const OPCODE: u8 = 0x5A;
 
 #[unsafe(no_mangle)]
-pub static mut OP0: [u8; 32] = [
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-];
-
-#[unsafe(no_mangle)]
-pub static mut OP1: [u8; 32] = [
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
-];
+pub static mut GAS_LIMIT: u64 = 10000;
 
 fn main() {
     // Given
-    let input = Bytes::new();
+    
+    // assume GAS_LIMIT >= 2
+    if unsafe { GAS_LIMIT } < 2 {
+        panic!()
+    }
+
+    let input = Bytes::from([]);
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -38,22 +34,8 @@ fn main() {
         caller,
         call_value,
     );
-    let gas_limit = 100000;
+    let gas_limit = unsafe { GAS_LIMIT };
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
-
-    let op0 = U256::from_be_bytes(unsafe { OP0 });
-    let Ok(()) = interpreter.stack.push(op0) else {
-        panic!()
-    };
-    for _ in 1..N {
-        let Ok(()) = interpreter.stack.push(U256::ZERO) else {
-            panic!()
-        };
-    }
-    let op1 = U256::from_be_bytes(unsafe { OP1 });
-    let Ok(()) = interpreter.stack.push(op1) else {
-        panic!()
-    };
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
@@ -66,17 +48,13 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual_op0) = interpreter.stack.pop() else {
+    let Ok(res) = interpreter.stack.pop() else {
         panic!()
     };
-    for _ in 1..N {
-        let Ok(_) = interpreter.stack.pop() else {
-            panic!()
-        };
+    let Ok(remaining_gas) = u64::try_from(res) else {
+        panic!()
+    };
+    if remaining_gas + 2 != unsafe { GAS_LIMIT } {
+        panic!()
     }
-    let Ok(actual_op1) = interpreter.stack.pop() else {
-        panic!()
-    };
-    assert_eq!(actual_op0, op0);
-    assert_eq!(actual_op1, op1);
 }

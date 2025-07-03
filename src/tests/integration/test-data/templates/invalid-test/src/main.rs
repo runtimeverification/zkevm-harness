@@ -1,25 +1,27 @@
 {{ src_header }}
 
-use revm_interpreter::interpreter::{Contract, Interpreter, SharedMemory};
+use revm_interpreter::InstructionResult;
+use revm_interpreter::interpreter::{
+    Contract,
+    Interpreter,
+    InterpreterResult,
+    SharedMemory,
+};
 use revm_interpreter::interpreter_action::InterpreterAction;
 use revm_interpreter::opcode::make_instruction_table;
 use revm_interpreter::primitives::specification::CancunSpec;
 use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
 
-const N: u8 = {{ n }};
-const OPCODE: u8 = {{ opcode }};
-
 #[unsafe(no_mangle)]
-pub static mut OP0: [u8; 32] = [
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-];
+pub static mut OPCODE: u8 = 0xfe;
 
 fn main() {
     // Given
-    let input = Bytes::new();
-    let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
+    let input = Bytes::from([]);
+    let bytecode = unsafe {
+        Bytecode::new_raw(Bytes::from([OPCODE]))
+    };
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
     let call_value = U256::ZERO;
@@ -35,17 +37,6 @@ fn main() {
     let gas_limit = 100000;
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
-    let expected = U256::from_be_bytes(unsafe { OP0 });
-    let Ok(()) = interpreter.stack.push(expected) else {
-        panic!()
-    };
-
-    for _ in 1..N {
-        let Ok(()) = interpreter.stack.push(U256::ZERO) else {
-            panic!()
-        };
-    }
-
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
@@ -54,11 +45,13 @@ fn main() {
     let action = interpreter.run(memory, &instruction_table, &mut host);
 
     // Then
-    let InterpreterAction::Return { result: _ } = action else {
+    let InterpreterAction::Return {
+        result: InterpreterResult {
+            result: InstructionResult::InvalidFEOpcode,
+            output: _,
+            gas: _,
+        }
+    } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
-    assert_eq!(actual, expected);
 }
