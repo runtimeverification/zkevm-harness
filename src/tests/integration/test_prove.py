@@ -245,7 +245,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         },
         ['OP0', 'OP1'],
     ),
-    # 0x20 KECCAK256
+    ('keccak256-test', 'keccak256-test', {}, ['DATA', 'OFFSET', 'SIZE']),
     ('address-test', 'address-test', {}, ['VALUE']),
     # 0x31 BALANCE - Skip: no real implementation in DummyHost
     ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
