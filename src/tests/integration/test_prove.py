@@ -109,8 +109,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('tstore-test', 'tstore-test', {}, ['KEY', 'VALUE']),
     ('tstore-concrete-key-test', 'tstore-test', {}, ['VALUE']),
     ('tstore-concrete-value-test', 'tstore-test', {}, ['KEY']),
-    # 0x5e MCOPY
-    ('mcopy-test', 'mcopy-test', {}, ['DATA', 'DEST_OFFSET', 'OFFSET', 'SIZE', 'INDEX']),
+    ('mcopy-test', 'mcopy-test', {}, ['DATA', 'DEST_OFFSET', 'SRC_OFFSET', 'SIZE', 'INDEX']),
     ('push0-test', 'push-test', {'opcode': '0x5f', 'arity': '0', 'value': '[]'}, []),
     ('push1-test', 'push-test', {'opcode': '0x60', 'arity': '1', 'value': '[0x01]'}, ['OP0']),
     ('push2-test', 'push-test', {'opcode': '0x61', 'arity': '2', 'value': '[0x00, 0x01]'}, ['OP0']),
@@ -247,9 +246,6 @@ def test_concrete(
 ) -> None:
     from pyk.cterm import CTerm
     from pyk.kast.inner import KApply, KSequence
-
-    if bin_file.name == 'mcopy-test-sp1':
-        pytest.skip('Failing test')
 
     # Given
     build_config = build_config_for_binary(bin_file)
