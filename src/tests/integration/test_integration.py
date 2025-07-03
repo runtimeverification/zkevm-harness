@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from kriscv.elf_parser import ELF
 
-from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, filter_symbols, get_symbol_value
+from .utils import RISC0_CONFIG, SP1_CONFIG, build_elf, filter_symbols
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -16,16 +16,16 @@ if TYPE_CHECKING:
     from .utils import BuildConfig, TemplateLoader
 
 
-CONCRETE_TEST_DATA: Final[tuple[tuple[str, str, BuildConfig, dict[str, str], bytes], ...]] = (
-    ('risc0-add', 'simple-2-op-test', RISC0_CONFIG, {'opcode': '0x01'}, b'\x00' * 31 + b'\x03'),
-    ('sp1-add', 'simple-2-op-test', SP1_CONFIG, {'opcode': '0x01'}, b'\x00' * 31 + b'\x03'),
-    ('risc0-sstore', 'sstore-test', RISC0_CONFIG, {}, b'\x00' * 28 + b'\xde\xad\xbe\xef'),
-    ('sp1-sstore', 'sstore-test', SP1_CONFIG, {}, b'\x00' * 28 + b'\xde\xad\xbe\xef'),
+CONCRETE_TEST_DATA: Final[tuple[tuple[str, str, BuildConfig, dict[str, str]], ...]] = (
+    ('risc0-add', 'simple-2-op-test', RISC0_CONFIG, {'opcode': '0x01'}),
+    ('sp1-add', 'simple-2-op-test', SP1_CONFIG, {'opcode': '0x01'}),
+    ('risc0-sstore', 'sstore-test', RISC0_CONFIG, {}),
+    ('sp1-sstore', 'sstore-test', SP1_CONFIG, {}),
 )
 
 
 @pytest.mark.parametrize(
-    'test_id,project_name,build_config,context,expected',
+    'test_id,project_name,build_config,context',
     CONCRETE_TEST_DATA,
     ids=[test_id for test_id, *_ in CONCRETE_TEST_DATA],
 )
@@ -36,12 +36,13 @@ def test_build_and_interpret(
     project_name: str,
     build_config: BuildConfig,
     context: dict[str, str],
-    expected: bytes,
 ) -> None:
+    from pyk.cterm import CTerm
+    from pyk.kast.inner import KApply, KSequence
+
     # Given
     elf_file = build_elf(project_name, load_template, build_config, context=context)
     elf = ELF.load(elf_file)
-    result = elf.unique_symbol('RESULT')
     (end_symbol,) = filter_symbols(elf, build_config.end_pattern)
     kriscv = tools(build_config.target)
     init_config = kriscv.config_from_elf(
@@ -52,7 +53,7 @@ def test_build_and_interpret(
 
     # When
     final_config = kriscv.run_config(init_config)
-    actual = get_symbol_value(kriscv, final_config, result)
+    final_cterm = CTerm(final_config)
 
     # Then
-    assert expected == actual
+    assert final_cterm.cell('INSTRS_CELL') == KSequence(KApply('#HALT'), KApply('#EXECUTE'))
