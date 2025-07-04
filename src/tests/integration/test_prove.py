@@ -7,7 +7,7 @@ import pytest
 from kriscv.elf_parser import ELF
 from pyk.kast.inner import KApply
 
-from .utils import BINARY_DIR, RISC0_CONFIG, SP1_CONFIG, SPEC_DIR, filter_symbols
+from .utils import BINARY_DIR, RISC0_CONFIG, SP1_CONFIG, SPEC_DIR, dedent, filter_symbols
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -22,32 +22,230 @@ if TYPE_CHECKING:
 
 TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('stop-test', 'stop-test', {}, []),
-    ('add-test', 'simple-2-op-test', {'opcode': '0x01'}, ['OP0', 'OP1']),
-    ('mul-test', 'simple-2-op-test', {'opcode': '0x02'}, ['OP0', 'OP1']),
-    ('sub-test', 'simple-2-op-test', {'opcode': '0x03'}, ['OP0', 'OP1']),
-    ('div-test', 'simple-2-op-test', {'opcode': '0x04'}, ['OP0', 'OP1']),
-    ('sdiv-test', 'simple-2-op-test', {'opcode': '0x05'}, ['OP0', 'OP1']),
-    ('mod-test', 'simple-2-op-test', {'opcode': '0x06'}, ['OP0', 'OP1']),
-    ('smod-test', 'simple-2-op-test', {'opcode': '0x07'}, ['OP0', 'OP1']),
-    ('addmod-test', 'simple-3-op-test', {'opcode': '0x08'}, ['OP0', 'OP1', 'OP2']),
-    ('mulmod-test', 'simple-3-op-test', {'opcode': '0x09'}, ['OP0', 'OP1', 'OP2']),
-    ('exp-test', 'simple-2-op-test', {'opcode': '0x0a'}, ['OP0', 'OP1']),
-    ('signextend-test', 'simple-2-op-test', {'opcode': '0x0b'}, ['OP0', 'OP1']),
-    ('lt-test', 'simple-2-op-test', {'opcode': '0x10'}, ['OP0', 'OP1']),
-    ('gt-test', 'simple-2-op-test', {'opcode': '0x11'}, ['OP0', 'OP1']),
-    ('slt-test', 'simple-2-op-test', {'opcode': '0x12'}, ['OP0', 'OP1']),
-    ('sgt-test', 'simple-2-op-test', {'opcode': '0x13'}, ['OP0', 'OP1']),
-    ('eq-test', 'simple-2-op-test', {'opcode': '0x14'}, ['OP0', 'OP1']),
-    ('iszero-test', 'simple-1-op-test', {'opcode': '0x15'}, ['OP0']),
-    ('and-test', 'simple-2-op-test', {'opcode': '0x16'}, ['OP0', 'OP1']),
-    ('or-test', 'simple-2-op-test', {'opcode': '0x17'}, ['OP0', 'OP1']),
-    ('xor-test', 'simple-2-op-test', {'opcode': '0x18'}, ['OP0', 'OP1']),
-    ('not-test', 'simple-1-op-test', {'opcode': '0x19'}, ['OP0']),
-    ('byte-test', 'simple-2-op-test', {'opcode': '0x1a'}, ['OP0', 'OP1']),
-    ('shl-test', 'simple-2-op-test', {'opcode': '0x1b'}, ['OP0', 'OP1']),
-    ('shr-test', 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
-    ('sar-test', 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
-    ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
+    (
+        'add-test',
+        'simple-2-op-test',
+        {'opcode': '0x01', 'expected': 'op1.wrapping_add(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'mul-test',
+        'simple-2-op-test',
+        {'opcode': '0x02', 'expected': 'op1.wrapping_mul(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sub-test',
+        'simple-2-op-test',
+        {'opcode': '0x03', 'expected': 'op1.wrapping_sub(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'div-test',
+        'simple-2-op-test',
+        {'opcode': '0x04', 'expected': 'op1.wrapping_div(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sdiv-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x05',
+            'expected': dedent(
+                """
+                use revm_interpreter::instructions::i256::i256_div;
+
+                i256_div(op1, op0)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'mod-test',
+        'simple-2-op-test',
+        {'opcode': '0x06', 'expected': 'op1.wrapping_rem(op1)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'smod-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x07',
+            'expected': dedent(
+                """
+                use revm_interpreter::instructions::i256::i256_mod;
+
+                i256_mod(op1, op0)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    ('addmod-test', 'simple-3-op-test', {'opcode': '0x08', 'expected': 'op2.add_mod(op1, op0)'}, ['OP0', 'OP1', 'OP2']),
+    ('mulmod-test', 'simple-3-op-test', {'opcode': '0x09', 'expected': 'op2.mul_mod(op1, op0)'}, ['OP0', 'OP1', 'OP2']),
+    (
+        'exp-test',
+        'simple-2-op-test',
+        {'opcode': '0x0a', 'expected': 'op1.pow(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'signextend-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x0b',
+            'expected': dedent(
+                """
+                if op1 < U256::from(31) {
+                    let op1 = op1.as_limbs()[0];
+                    let bit_index = (8 * op1 + 7) as usize;
+                    let bit = op0.bit(bit_index);
+                    let mask = (U256::from(1) << bit_index) - U256::from(1);
+                    if bit {
+                        op0 | !mask
+                    } else {
+                        op0 & mask
+                    }
+                } else {
+                    op0
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'lt-test',
+        'simple-2-op-test',
+        {'opcode': '0x10', 'expected': 'U256::from(op1 < op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'gt-test',
+        'simple-2-op-test',
+        {'opcode': '0x11', 'expected': 'U256::from(op1 > op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'slt-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x12',
+            'expected': dedent(
+                """
+                use core::cmp::Ordering;
+                use revm_interpreter::instructions::i256::i256_cmp;
+
+                U256::from(i256_cmp(&op1, &op0) == Ordering::Less)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sgt-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x13',
+            'expected': dedent(
+                """
+                use core::cmp::Ordering;
+                use revm_interpreter::instructions::i256::i256_cmp;
+
+                U256::from(i256_cmp(&op1, &op0) == Ordering::Greater)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'eq-test',
+        'simple-2-op-test',
+        {'opcode': '0x14', 'expected': 'U256::from(op1 == op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'iszero-test',
+        'simple-1-op-test',
+        {'opcode': '0x15', 'expected': 'U256::from(op0.is_zero())'},
+        ['OP0'],
+    ),
+    ('and-test', 'simple-2-op-test', {'opcode': '0x16', 'expected': 'op1 & op0'}, ['OP0', 'OP1']),
+    ('or-test', 'simple-2-op-test', {'opcode': '0x17', 'expected': 'op1 | op0'}, ['OP0', 'OP1']),
+    ('xor-test', 'simple-2-op-test', {'opcode': '0x18', 'expected': 'op1 ^ op0'}, ['OP0', 'OP1']),
+    ('not-test', 'simple-1-op-test', {'opcode': '0x19', 'expected': '!op0'}, ['OP0']),
+    (
+        'byte-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1a',
+            'expected': dedent(
+                """
+                if op1 < U256::from(32) {
+                    U256::from(op0.byte(31 - usize::try_from(op1).unwrap()))
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'shl-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1b',
+            'expected': dedent(
+                """
+                if op1 < U256::from(256) {
+                    op0 << op1
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'shr-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1c',
+            'expected': dedent(
+                """
+                if op1 < U256::from(256) {
+                    op0 >> op1
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sar-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1d',
+            'expected': dedent(
+                """
+                if op1 < U256::from(256) {
+                    op0.arithmetic_shr(usize::try_from(op1).unwrap())
+                } else if op0.bit(255) {
+                    U256::MAX
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    ('keccak256-test', 'keccak256-test', {}, ['DATA', 'OFFSET', 'SIZE']),
     ('address-test', 'address-test', {}, ['VALUE']),
     # 0x31 BALANCE - Skip: no real implementation in DummyHost
     ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
