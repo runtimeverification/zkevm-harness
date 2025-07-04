@@ -97,12 +97,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
     ('sstore-concrete-key-test', 'sstore-test', {}, ['VALUE']),
     ('sstore-concrete-value-test', 'sstore-test', {}, ['KEY']),
-    # 0x56 JUMP
-    # 0x57 JUMPI
-    # 0x58 PC
+    ('jump-test', 'jump-test', {}, ['CODE', 'CODE_SIZE']),
+    ('jumpi-test', 'jumpi-test', {}, ['CODE', 'CODE_SIZE', 'COND']),
+    ('pc-test', 'pc-test', {}, ['CODE', 'PC']),
     ('msize-test', 'msize-test', {}, ['SIZE']),
     ('gas-test', 'gas-test', {}, ['GAS_LIMIT']),
-    # 0x5b JUMPDEST
+    # 0x5b JUMPDEST - tested with JUMP and JUMPI
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
     ('tload-concrete-key-test', 'tload-test', {}, ['VALUE']),
     ('tload-concrete-value-test', 'tload-test', {}, ['KEY']),
@@ -149,17 +149,17 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
     ),
     ('create-test', 'create-test', {}, ['DATA', 'VALUE', 'OFFSET', 'SIZE', 'INDEX']),
-    # 0xf1 CALL
-    # 0xf2 CALLCODE
+    # 0xf1 CALL - Skip: no real implementation in DummyHost
+    # 0xf2 CALLCODE - Skip: no real implementation in DummyHost
     (
         'return-test',
         'return-with-output-test',
         {'opcode': '0xf3', 'instruction_result': 'Return'},
         ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
     ),
-    # 0xf4 DELEGATECALL
+    # 0xf4 DELEGATECALL - Skip: no real implementation in DummyHost
     ('create2-test', 'create2-test', {}, ['DATA', 'VALUE', 'OFFSET', 'SIZE', 'SALT', 'INDEX']),
-    # 0xfa STATICCALL
+    # 0xfa STATICCALL - Skip: no real implementation in DummyHost
     (
         'revert-test',
         'return-with-output-test',
@@ -167,7 +167,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
     ),
     ('invalid-test', 'invalid-test', {}, []),
-    # 0xff SELFDESTRUCT
+    # 0xff SELFDESTRUCT - Skip: no real implementation in DummyHost
 )
 
 GEN_CLAIM_TEST_DATA: Final = tuple(
