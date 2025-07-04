@@ -32,34 +32,49 @@ pub static mut DATA: [u8; MEMORY_SIZE] = [
 ];
 
 #[unsafe(no_mangle)]
-pub static mut DEST_OFFSET: u8 = 128;
+pub static mut DEST_OFFSET: usize = 128;
 
 #[unsafe(no_mangle)]
-pub static mut OFFSET: u8 = 0;
+pub static mut SRC_OFFSET: usize = 0;
 
 #[unsafe(no_mangle)]
-pub static mut SIZE: u8 = 32;
+pub static mut SIZE: usize = 32;
 
 #[unsafe(no_mangle)]
-pub static mut INDEX: u8 = 129;
+pub static mut INDEX: usize = 129;
 
 
 fn main() {
     // Given
 
     unsafe {
-        // assume DEST_OFFSET + SIZE < MEMORY_SIZE
-        if DEST_OFFSET as usize + SIZE as usize >= MEMORY_SIZE {
+        // assume DEST_OFFSET <= usize::MAX - SIZE
+        if DEST_OFFSET > usize::MAX - SIZE {
             return
         }
 
-        // assume OFFSET + SIZE < MEMORY_SIZE
-        if OFFSET as usize + SIZE as usize >= MEMORY_SIZE {
+        // assume DEST_OFFSET + SIZE < MEMORY_SIZE
+        if DEST_OFFSET + SIZE >= MEMORY_SIZE {
+            return
+        }
+
+        // assume SRC_OFFSET <= usize::MAX - SIZE
+        if SRC_OFFSET > usize::MAX - SIZE {
+            return
+        }
+
+        // assume SRC_OFFSET + SIZE < MEMORY_SIZE
+        if SRC_OFFSET + SIZE >= MEMORY_SIZE {
+            return
+        }
+
+        // assume INDEX < MEMORY_SIZE
+        if INDEX >= MEMORY_SIZE {
             return
         }
     }
 
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -76,21 +91,28 @@ fn main() {
     let gas_limit = 100000;
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { SIZE })) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { OFFSET })) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { DEST_OFFSET })) else {
-        panic!()
-    };
+    let size = U256::from(unsafe { SIZE });
+    let src_offset = U256::from(unsafe { SRC_OFFSET });
+    let dest_offset = U256::from(unsafe { DEST_OFFSET });
 
-    let mut memory = SharedMemory::with_capacity(MEMORY_SIZE);
+    interpreter.stack.push(size).unwrap();
+    interpreter.stack.push(src_offset).unwrap();
+    interpreter.stack.push(dest_offset).unwrap();
+
+    let mut memory = SharedMemory::new();
+    memory.resize(MEMORY_SIZE);
     memory.set(0, unsafe { &DATA[..] });
 
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
+
+    let expected = unsafe {
+        if DEST_OFFSET <= INDEX && INDEX < DEST_OFFSET + SIZE {
+            DATA[INDEX - DEST_OFFSET + SRC_OFFSET]
+        } else {
+            DATA[INDEX]
+        }
+    };
 
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
@@ -99,16 +121,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    unsafe {
-        let actual = interpreter.shared_memory.get_byte(INDEX as usize);
-        if DEST_OFFSET <= INDEX && (INDEX as u16) < (DEST_OFFSET as u16) + (SIZE as u16) {
-            if actual != DATA[INDEX as usize - DEST_OFFSET as usize + OFFSET as usize] {
-                panic!()
-            }
-        } else {
-            if actual != DATA[INDEX as usize] {
-                panic!()
-            }
-        }
-    }
+    let actual = interpreter.shared_memory.get_byte(unsafe { INDEX });
+    assert_eq!(actual, expected);
 }
