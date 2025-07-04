@@ -257,7 +257,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'calldatacopy-test',
         'calldatacopy-test',
         {},
-        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
+        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'OFFSET', 'SIZE', 'INDEX'],
     ),
     ('codesize-test', 'codesize-test', {}, ['CODE', 'CODE_SIZE']),
     ('codecopy-test', 'codecopy-test', {}, ['CODE', 'CODE_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX']),
