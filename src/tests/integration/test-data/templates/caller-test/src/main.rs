@@ -11,13 +11,22 @@ const OPCODE: u8 = 0x33;
 
 #[unsafe(no_mangle)]
 pub static mut VALUE: [u8; 20] = [
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x02,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13,
 ];
+
+#[unsafe(no_mangle)]
+pub static mut INDEX: usize = 11;
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+
+    // assume INDEX < 32
+    if unsafe { INDEX } >= 32 {
+        return;
+    }
+
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = Address::from(unsafe { VALUE });
@@ -38,6 +47,14 @@ fn main() {
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
 
+    let expected = unsafe {
+        if INDEX < 20 {
+            VALUE[19 - INDEX]
+        } else {
+            0x00
+        }
+    };
+
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
 
@@ -45,13 +62,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(res) = interpreter.stack.pop() else {
-        panic!()
-    };
-    let actual32: [u8; 32] = res.to_be_bytes();
-    let mut actual: [u8; 20] = [0x00; 20];
-    actual.copy_from_slice(&actual32[12..]);
-    if actual != unsafe { VALUE } {
-        panic!()
-    }
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual = actual_u256.byte(unsafe { INDEX });
+    assert_eq!(actual, expected);
 }
