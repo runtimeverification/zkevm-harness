@@ -10,17 +10,17 @@ use revm_interpreter::DummyHost;
 const OPCODE: u8 = 0x5A;
 
 #[unsafe(no_mangle)]
-pub static mut GAS_LIMIT: u64 = 10000;
+pub static mut GAS_LIMIT: u64 = 2;
 
 fn main() {
     // Given
-    
+
     // assume GAS_LIMIT >= 2
     if unsafe { GAS_LIMIT } < 2 {
         panic!()
     }
 
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -41,6 +41,8 @@ fn main() {
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
 
+    let expected = gas_limit - 2;
+
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
 
@@ -48,13 +50,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(res) = interpreter.stack.pop() else {
-        panic!()
-    };
-    let Ok(remaining_gas) = u64::try_from(res) else {
-        panic!()
-    };
-    if remaining_gas + 2 != unsafe { GAS_LIMIT } {
-        panic!()
-    }
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual = u64::try_from(actual_u256).unwrap();
+    assert_eq!(actual, expected);
 }
