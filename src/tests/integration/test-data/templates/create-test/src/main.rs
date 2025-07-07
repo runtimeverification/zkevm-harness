@@ -1,12 +1,12 @@
 {{ src_header }}
 
-use revm_interpreter::{CreateInputs, CreateScheme};
 use revm_interpreter::interpreter::{Contract, Interpreter, SharedMemory};
 use revm_interpreter::interpreter_action::InterpreterAction;
 use revm_interpreter::opcode::make_instruction_table;
 use revm_interpreter::primitives::specification::CancunSpec;
 use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
+use revm_interpreter::{CreateInputs, CreateScheme};
 
 const OPCODE: u8 = 0xf0;
 
@@ -53,17 +53,17 @@ fn main() {
     unsafe {
         // assume OFFSET <= usize::MAX - SIZE
         if OFFSET > usize::MAX - SIZE {
-            return
+            return;
         }
 
         // assume OFFSET + SIZE < MEMORY_SIZE
         if OFFSET + SIZE >= MEMORY_SIZE {
-            return
+            return;
         }
 
         // assume INDEX < SIZE
         if INDEX >= SIZE {
-            return
+            return;
         }
     }
 
@@ -109,12 +109,13 @@ fn main() {
         panic!()
     };
     let CreateInputs {
-            caller: _,
-            scheme: CreateScheme::Create,
-            value: actual_value,
-            init_code,
-            gas_limit: _,
-    } = *inputs else {
+        caller: _,
+        scheme: CreateScheme::Create,
+        value: actual_value,
+        init_code,
+        gas_limit: _,
+    } = *inputs
+    else {
         panic!()
     };
     let actual_init_byte = unsafe { *init_code.get_unchecked(INDEX) };
