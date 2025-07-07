@@ -1,4 +1,7 @@
 module SIGNEXTEND-NEQ0-TEST-SP1
+// original: signextend-test-sp1.k before adding assertions
+//  changes: add constraint
+//           andBool notBool Bytes2Int ( substrBytes ( reverseBytes ( OP1:Bytes ) , 28 , 32 ) , LE , Unsigned ) ==Int 0
     imports public RISCV
     
     claim [signextend-neq0-test-sp1]: <riscv>

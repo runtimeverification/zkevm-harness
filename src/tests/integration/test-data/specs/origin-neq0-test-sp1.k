@@ -1,4 +1,8 @@
 module ORIGIN-NEQ0-TEST-SP1
+// original: origin-test-sp1.k before adding assertions
+//  changes: add constraints 
+//           andBool (notBool 0 ==Int Bytes2Int ( substrBytes ( VALUE:Bytes , 0 , 1 ) , LE , Unsigned ))
+//           andBool (notBool 0 -Int Bytes2Int ( substrBytes ( VALUE:Bytes , 0 , 1 ) , LE , Unsigned ) &Int 4294967295 ==Int 0)
     imports public RISCV
     
     claim [origin-neq0-test-sp1]: <riscv>

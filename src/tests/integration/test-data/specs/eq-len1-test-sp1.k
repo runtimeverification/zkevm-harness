@@ -1,4 +1,6 @@
 module EQ-LEN1-TEST-SP1
+// original: eq-test-sp1.k before adding assertions
+//  changes: change lengthBytes ( OP0:Bytes ) and lengthBytes ( OP1:Bytes ) from 32 to 1
     imports public RISCV
     
     claim [eq-len1-test-sp1]: <riscv>
