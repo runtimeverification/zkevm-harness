@@ -35,14 +35,13 @@ pub static mut DATA: [u8; MEMORY_SIZE] = [
 pub static mut DEST_OFFSET: usize = 128;
 
 #[unsafe(no_mangle)]
-pub static mut SRC_OFFSET: usize = 0;
+pub static mut SRC_OFFSET: usize = 3;
 
 #[unsafe(no_mangle)]
-pub static mut SIZE: usize = 32;
+pub static mut SIZE: usize = 0;
 
 #[unsafe(no_mangle)]
 pub static mut INDEX: usize = 129;
-
 
 fn main() {
     // Given
