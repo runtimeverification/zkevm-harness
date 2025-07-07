@@ -4,10 +4,11 @@ use revm_interpreter::interpreter::{Contract, Interpreter, SharedMemory};
 use revm_interpreter::interpreter_action::InterpreterAction;
 use revm_interpreter::opcode::make_instruction_table;
 use revm_interpreter::primitives::specification::CancunSpec;
-use revm_interpreter::primitives::{address, B256, Bytecode, Bytes, U256};
+use revm_interpreter::primitives::{address, Bytecode, Bytes, B256, U256};
 use revm_interpreter::DummyHost;
 
 const OPCODE: u8 = {{ opcode }};
+const N_TOPICS: usize = {{ n_topics }};
 
 const MEMORY_SIZE: usize = 256;
 
@@ -40,8 +41,6 @@ pub static mut SIZE: usize = 32;
 #[unsafe(no_mangle)]
 pub static mut INDEX: usize = 1;
 
-const N_TOPICS: usize = {{ n_topics }};
-
 #[unsafe(no_mangle)]
 pub static mut TOPIC_DATA: [u8; 128] = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -57,34 +56,28 @@ pub static mut TOPIC_DATA: [u8; 128] = [
 #[unsafe(no_mangle)]
 pub static mut TOPIC_INDEX: usize = 0;
 
-
 fn main() {
     // Given
 
     unsafe {
-        // assume OFFSET + SIZE >= OFFSET
-        if OFFSET + SIZE < OFFSET {
-            return
-        }
-
-        // assume OFFSET + SIZE >= SIZE
-        if OFFSET + SIZE < SIZE {
-            return
+        // assume OFFSET <= usize::MAX - SIZE
+        if OFFSET > usize::MAX - SIZE {
+            return;
         }
 
         // assume OFFSET + SIZE < MEMORY_SIZE
         if OFFSET + SIZE >= MEMORY_SIZE {
-            return
+            return;
         }
 
         // assume N_TOPICS == 0 || TOPIC_INDEX < N_TOPICS
         if N_TOPICS > 0 && TOPIC_INDEX >= N_TOPICS {
-            return
+            return;
         }
 
         // assume INDEX < SIZE
         if INDEX >= SIZE {
-            return
+            return;
         }
     }
 
@@ -106,17 +99,15 @@ fn main() {
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
     for n in (0..N_TOPICS).rev() {
-        let topic_n = U256::from_be_slice(&unsafe { TOPIC_DATA }[n*32..(n+1)*32]);
-        let Ok(()) = interpreter.stack.push(topic_n) else {
-            panic!()
-        };
+        let topic_n = U256::from_be_slice(unsafe { &TOPIC_DATA[n * 32..(n + 1) * 32] });
+        interpreter.stack.push(topic_n).unwrap();
     }
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { SIZE })) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { OFFSET })) else {
-        panic!()
-    };
+
+    let size = U256::from(unsafe { SIZE });
+    let offset = U256::from(unsafe { OFFSET });
+
+    interpreter.stack.push(size).unwrap();
+    interpreter.stack.push(offset).unwrap();
 
     let mut memory = SharedMemory::new();
     memory.resize(MEMORY_SIZE);
@@ -124,6 +115,10 @@ fn main() {
 
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
+
+    let expected_byte = unsafe { DATA[OFFSET + INDEX] };
+    let expected_topic =
+        B256::from_slice(unsafe { &TOPIC_DATA[TOPIC_INDEX * 32..(TOPIC_INDEX + 1) * 32] });
 
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
@@ -134,15 +129,10 @@ fn main() {
     };
 
     let log = &host.log[0].data;
-    unsafe {
-        let actual_byte: u8 = *log.data.get_unchecked(INDEX);
-        let expected_byte: u8 = DATA[OFFSET + INDEX];
-        assert_eq!(actual_byte, expected_byte);
-
-        if N_TOPICS > 0 {
-            let actual_topic = log.topics()[TOPIC_INDEX];
-            let expected_topic = B256::from_slice(&TOPIC_DATA[TOPIC_INDEX*32..(TOPIC_INDEX+1)*32]);
-            assert_eq!(actual_topic, expected_topic);
-        }
+    let actual_byte = unsafe { *log.data.get_unchecked(INDEX) };
+    assert_eq!(actual_byte, expected_byte);
+    if N_TOPICS > 0 {
+        let actual_topic = log.topics()[unsafe { TOPIC_INDEX }];
+        assert_eq!(actual_topic, expected_topic);
     }
 }
