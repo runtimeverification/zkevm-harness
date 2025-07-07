@@ -17,7 +17,7 @@ pub static mut VALUE: [u8; 32] = [
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -45,10 +45,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
-    if actual != call_value {
-        panic!()
-    }
+    let actual = interpreter.stack.pop().unwrap();
+    assert_eq!(actual, call_value);
 }
