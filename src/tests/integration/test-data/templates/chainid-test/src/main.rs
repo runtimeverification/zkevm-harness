@@ -14,7 +14,7 @@ pub static mut VALUE: u64 = 1;
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -44,13 +44,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(res) = interpreter.stack.pop() else {
-        panic!()
-    };
-    let Ok(gas_price) = u64::try_from(res) else {
-        panic!()
-    };
-    if gas_price != unsafe { VALUE } {
-        panic!()
-    }
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual = u64::try_from(actual_u256).unwrap();
+    assert_eq!(actual, unsafe { VALUE });
 }
