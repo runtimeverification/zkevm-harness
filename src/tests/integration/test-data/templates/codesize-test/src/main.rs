@@ -9,28 +9,27 @@ use revm_interpreter::DummyHost;
 
 const OPCODES: [u8; 2] = [0x38, 0x00]; // CODESIZE, STOP
 
+const MAX_CODE_SIZE: usize = 32;
+
 #[unsafe(no_mangle)]
-pub static mut CODE: [u8; 32] = [
+pub static mut CODE: [u8; MAX_CODE_SIZE] = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
 ];
 
 #[unsafe(no_mangle)]
-pub static mut CODE_SIZE: u8 = 32;
-
+pub static mut CODE_SIZE: usize = 32;
 
 fn main() {
     // Given
 
-    // assume CODE_SIZE <= 32
-    if unsafe { CODE_SIZE } > 32 {
-        return
+    // assume CODE_SIZE + 2 <= MAX_CODE_SIZE
+    if unsafe { CODE_SIZE } + 2 > MAX_CODE_SIZE {
+        return;
     }
 
-    let input = Bytes::from([]);
-    let bytecode_iter = unsafe {
-        OPCODES.iter().chain(CODE[..CODE_SIZE as usize].iter())
-    };
+    let input = Bytes::new();
+    let bytecode_iter = unsafe { OPCODES.iter().chain(CODE[..CODE_SIZE].iter()) };
     let bytecode = Bytecode::new_raw(Bytes::from_iter(bytecode_iter));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -51,6 +50,8 @@ fn main() {
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
 
+    let expected = unsafe { CODE_SIZE } + 2;
+
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
 
@@ -58,10 +59,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
-    if actual != U256::from(unsafe { CODE_SIZE } + 2) {
-        panic!()
-    }
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual = usize::try_from(actual_u256).unwrap();
+    assert_eq!(actual, expected);
 }
