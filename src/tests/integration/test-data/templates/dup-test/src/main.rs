@@ -36,14 +36,10 @@ fn main() {
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
     let expected = U256::from_be_bytes(unsafe { OP0 });
-    let Ok(()) = interpreter.stack.push(expected) else {
-        panic!()
-    };
+    interpreter.stack.push(expected).unwrap();
 
     for _ in 1..N {
-        let Ok(()) = interpreter.stack.push(U256::ZERO) else {
-            panic!()
-        };
+        interpreter.stack.push(U256::ZERO).unwrap();
     }
 
     let memory = SharedMemory::new();
@@ -57,8 +53,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
+    let actual = interpreter.stack.pop().unwrap();
     assert_eq!(actual, expected);
 }
