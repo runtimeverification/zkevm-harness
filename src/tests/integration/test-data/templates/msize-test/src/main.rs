@@ -9,15 +9,20 @@ use revm_interpreter::DummyHost;
 
 const OPCODE: u8 = 0x59;
 
-const MEMORY_SIZE: usize = 256;
+const MAX_MEMORY_SIZE: usize = 256;
 
 #[unsafe(no_mangle)]
-pub static mut SIZE: u8 = 0x02;
-
+pub static mut SIZE: usize = 16;
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+
+    // assume SIZE <= MAX_MEMORY_SIZE
+    if unsafe { SIZE } > MAX_MEMORY_SIZE {
+        return;
+    }
+
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -34,8 +39,8 @@ fn main() {
     let gas_limit = 100000;
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
-    let mut memory = SharedMemory::with_capacity(MEMORY_SIZE);
-    memory.resize(usize::from(unsafe { SIZE }));
+    let mut memory = SharedMemory::new();
+    memory.resize(unsafe { SIZE });
 
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
@@ -47,10 +52,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
-    if actual != U256::from(unsafe { SIZE }) {
-        panic!()
-    }
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual = usize::try_from(actual_u256).unwrap();
+    assert_eq!(actual, unsafe { SIZE });
 }
