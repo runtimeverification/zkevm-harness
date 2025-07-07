@@ -248,7 +248,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('keccak256-test', 'keccak256-test', {}, ['DATA', 'OFFSET', 'SIZE']),
     ('address-test', 'address-test', {}, ['VALUE']),
     # 0x31 BALANCE - Skip: no real implementation in DummyHost
-    ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
+    ('origin-test', 'host-property-address-test', {'opcode': '0x32', 'property': 'env.tx.caller'}, ['VALUE', 'INDEX']),
     ('caller-test', 'caller-test', {}, ['VALUE', 'INDEX']),
     ('callvalue-test', 'callvalue-test', {}, ['VALUE']),
     ('calldataload-test', 'calldataload-test', {}, ['DATA', 'DATA_SIZE', 'LOAD_INDEX', 'INDEX']),
@@ -273,7 +273,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ),
     # 0x3f EXTCODEHASH - Skip: no real implementation in DummyHost
     # 0x40 BLOCKHASH - Skip: no real implementation in DummyHost
-    ('coinbase-test', 'host-property-address-test', {'opcode': '0x41', 'property': 'env.block.coinbase'}, ['VALUE']),
+    (
+        'coinbase-test',
+        'host-property-address-test',
+        {'opcode': '0x41', 'property': 'env.block.coinbase'},
+        ['VALUE', 'INDEX'],
+    ),
     ('timestamp-test', 'host-property-u256-test', {'opcode': '0x42', 'property': 'env.block.timestamp'}, ['VALUE']),
     ('number-test', 'host-property-u256-test', {'opcode': '0x43', 'property': 'env.block.number'}, ['VALUE']),
     ('prevrandao-test', 'prevrandao-test', {}, ['VALUE']),
