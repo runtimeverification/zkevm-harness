@@ -269,7 +269,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'returndatacopy-test',
         'returndatacopy-test',
         {},
-        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
+        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'OFFSET', 'SIZE', 'INDEX'],
     ),
     # 0x3f EXTCODEHASH - Skip: no real implementation in DummyHost
     # 0x40 BLOCKHASH - Skip: no real implementation in DummyHost
