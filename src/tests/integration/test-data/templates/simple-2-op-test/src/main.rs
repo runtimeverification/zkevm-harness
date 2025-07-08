@@ -43,12 +43,8 @@ fn main() {
     let op0 = U256::from_be_bytes(unsafe { OP0 });
     let op1 = U256::from_be_bytes(unsafe { OP1 });
 
-    let Ok(()) = interpreter.stack.push(op0) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(op1) else {
-        panic!()
-    };
+    interpreter.stack.push(op0).unwrap();
+    interpreter.stack.push(op1).unwrap();
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
@@ -65,8 +61,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
+    let actual = interpreter.stack.pop().unwrap();
     assert_eq!(actual, expected);
 }
