@@ -497,9 +497,6 @@ def test_symbolic(
     spec_file: Path,
     symtools_for_spec: Callable[[Path], SymTools],
 ) -> None:
-    if spec_file.name != 'stop-test-sp1.k':
-        pytest.skip(reason='Work in progress')
-
     # Given
     symtools = symtools_for_spec(spec_file)
 
