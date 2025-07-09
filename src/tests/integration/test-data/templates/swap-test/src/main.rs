@@ -42,18 +42,13 @@ fn main() {
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
     let op0 = U256::from_be_bytes(unsafe { OP0 });
-    let Ok(()) = interpreter.stack.push(op0) else {
-        panic!()
-    };
-    for _ in 1..N {
-        let Ok(()) = interpreter.stack.push(U256::ZERO) else {
-            panic!()
-        };
-    }
     let op1 = U256::from_be_bytes(unsafe { OP1 });
-    let Ok(()) = interpreter.stack.push(op1) else {
-        panic!()
-    };
+
+    interpreter.stack.push(op0).unwrap();
+    for _ in 1..N {
+        interpreter.stack.push(U256::ZERO).unwrap();
+    }
+    interpreter.stack.push(op1).unwrap();
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
@@ -66,17 +61,11 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual_op0) = interpreter.stack.pop() else {
-        panic!()
-    };
+    let actual_op0 = interpreter.stack.pop().unwrap();
     for _ in 1..N {
-        let Ok(_) = interpreter.stack.pop() else {
-            panic!()
-        };
+        interpreter.stack.pop().unwrap();
     }
-    let Ok(actual_op1) = interpreter.stack.pop() else {
-        panic!()
-    };
+    let actual_op1 = interpreter.stack.pop().unwrap();
     assert_eq!(actual_op0, op0);
     assert_eq!(actual_op1, op1);
 }

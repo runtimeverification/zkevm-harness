@@ -1,12 +1,12 @@
 {{ src_header }}
 
-use revm_interpreter::InstructionResult;
 use revm_interpreter::interpreter::{Contract, Interpreter, InterpreterResult, SharedMemory};
 use revm_interpreter::interpreter_action::InterpreterAction;
 use revm_interpreter::opcode::make_instruction_table;
 use revm_interpreter::primitives::specification::CancunSpec;
 use revm_interpreter::primitives::{address, Bytecode, Bytes, U256};
 use revm_interpreter::DummyHost;
+use revm_interpreter::InstructionResult;
 
 const OPCODE: u8 = {{ opcode }};
 
@@ -33,31 +33,35 @@ pub static mut DATA: [u8; MEMORY_SIZE] = [
 ];
 
 #[unsafe(no_mangle)]
-pub static mut OFFSET: u8 = 2;
+pub static mut OFFSET: usize = 2;
 
 #[unsafe(no_mangle)]
-pub static mut SIZE: u8 = 32;
+pub static mut SIZE: usize = 32;
 
 #[unsafe(no_mangle)]
-pub static mut INDEX: u8 = 1;
-
+pub static mut INDEX: usize = 1;
 
 fn main() {
     // Given
 
     unsafe {
+        // assume OFFSET <= usize::MAX - SIZE
+        if OFFSET > usize::MAX - SIZE {
+            return;
+        }
+
         // assume OFFSET + SIZE < MEMORY_SIZE
-        if OFFSET as usize + SIZE as usize >= MEMORY_SIZE {
-            return
+        if OFFSET + SIZE >= MEMORY_SIZE {
+            return;
         }
 
         // assume INDEX < SIZE
         if INDEX >= SIZE {
-            return
+            return;
         }
     }
 
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -74,37 +78,36 @@ fn main() {
     let gas_limit = 100000;
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { SIZE })) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { OFFSET })) else {
-        panic!()
-    };
+    let size = U256::from(unsafe { SIZE });
+    let offset = U256::from(unsafe { OFFSET });
 
-    let mut memory = SharedMemory::with_capacity(MEMORY_SIZE);
+    interpreter.stack.push(size).unwrap();
+    interpreter.stack.push(offset).unwrap();
+
+    let mut memory = SharedMemory::new();
+    memory.resize(MEMORY_SIZE);
     memory.set(0, unsafe { &DATA[..] });
 
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
+
+    let expected = unsafe { DATA[OFFSET + INDEX] };
 
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
 
     // Then
     let InterpreterAction::Return {
-        result: InterpreterResult {
-            result: InstructionResult::{{ instruction_result }},
-            output,
-            gas: _,
-        }
-    } = action else {
+        result:
+            InterpreterResult {
+                result: InstructionResult::{{ instruction_result }},
+                output,
+                gas: _,
+            },
+    } = action
+    else {
         panic!()
     };
-    unsafe {
-        let expected = interpreter.shared_memory.get_byte(OFFSET as usize + INDEX as usize);
-        let actual = *output.get_unchecked(INDEX as usize);
-        if actual != expected {
-            panic!()
-        }
-    }
+    let actual = unsafe { *output.get_unchecked(INDEX) };
+    assert_eq!(actual, expected);
 }

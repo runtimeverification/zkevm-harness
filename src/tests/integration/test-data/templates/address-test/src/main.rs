@@ -12,12 +12,12 @@ const OPCODE: u8 = 0x30;
 #[unsafe(no_mangle)]
 pub static mut VALUE: [u8; 20] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x01,
+    0xde, 0xad, 0xbe, 0xef,
 ];
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = Address::from(unsafe { VALUE });
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -45,13 +45,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(res) = interpreter.stack.pop() else {
-        panic!()
-    };
-    let actual32: [u8; 32] = res.to_be_bytes();
-    let mut actual: [u8; 20] = [0x00; 20];
-    actual.copy_from_slice(&actual32[12..]);
-    if actual != unsafe { VALUE } {
-        panic!()
-    }
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual_32bytes: [u8; 32] = actual_u256.to_be_bytes();
+    assert_eq!(&actual_32bytes[12..], unsafe { &VALUE[..] });
 }

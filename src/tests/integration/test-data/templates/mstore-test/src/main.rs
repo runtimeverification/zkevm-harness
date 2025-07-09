@@ -16,7 +16,7 @@ pub static mut OFFSET: usize = 1;
 #[unsafe(no_mangle)]
 pub static mut VALUE: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xde, 0xad, 0xbe, 0xef,
 ];
 
 fn main() {
@@ -24,7 +24,7 @@ fn main() {
 
     // assume OFFSET <= MAX_OFFSET
     if unsafe { OFFSET } > MAX_OFFSET {
-        return
+        return;
     }
 
     let input = Bytes::new();
@@ -45,12 +45,10 @@ fn main() {
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
     let value = U256::from_be_bytes(unsafe { VALUE });
-    let Ok(()) = interpreter.stack.push(value) else {
-        panic!()
-    };
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { OFFSET })) else {
-        panic!()
-    };
+    let offset = U256::from(unsafe { OFFSET });
+
+    interpreter.stack.push(value).unwrap();
+    interpreter.stack.push(offset).unwrap();
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
@@ -63,6 +61,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let actual_value = interpreter.shared_memory.get_u256(unsafe { OFFSET });
-    assert_eq!(actual_value, value);
+    let actual = interpreter.shared_memory.get_u256(unsafe { OFFSET });
+    assert_eq!(actual, value);
 }

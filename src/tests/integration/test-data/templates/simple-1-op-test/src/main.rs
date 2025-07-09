@@ -35,9 +35,7 @@ fn main() {
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
     let op0 = U256::from_be_bytes(unsafe { OP0 });
-    let Ok(()) = interpreter.stack.push(op0) else {
-        panic!()
-    };
+    interpreter.stack.push(op0).unwrap();
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
@@ -54,8 +52,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
+    let actual = interpreter.stack.pop().unwrap();
     assert_eq!(actual, expected);
 }

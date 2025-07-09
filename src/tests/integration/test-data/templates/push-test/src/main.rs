@@ -9,8 +9,10 @@ use revm_interpreter::DummyHost;
 
 const OPCODE: u8 = {{ opcode }};
 
+const N: usize = {{ n }};
+
 #[unsafe(no_mangle)]
-pub static mut OP0: [u8; {{ arity }}] = {{ value }};
+pub static mut OP0: [u8; N] = [0x01; N];
 
 fn main() {
     // Given
@@ -36,6 +38,8 @@ fn main() {
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
 
+    let expected = U256::from_be_slice(unsafe { &OP0[..] });
+
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
 
@@ -43,8 +47,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(res) = interpreter.stack.pop() else {
-        panic!()
-    };
-    assert_eq!(res, U256::from_be_slice(unsafe { &OP0[..] }))
+    let actual = interpreter.stack.pop().unwrap();
+    assert_eq!(actual, expected);
 }

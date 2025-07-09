@@ -12,12 +12,12 @@ const OPCODE: u8 = {{ opcode }};
 #[unsafe(no_mangle)]
 pub static mut VALUE: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xde, 0xad, 0xbe, 0xef,
 ];
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -39,6 +39,7 @@ fn main() {
     let mut host = DummyHost::default();
 
     let expected = U256::from_be_bytes(unsafe { VALUE });
+
     host.{{ property }} = expected;
 
     // When
@@ -48,10 +49,6 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(actual) = interpreter.stack.pop() else {
-        panic!()
-    };
-    if actual != expected {
-        panic!()
-    }
+    let actual = interpreter.stack.pop().unwrap();
+    assert_eq!(actual, expected);
 }
