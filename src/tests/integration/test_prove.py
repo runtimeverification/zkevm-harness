@@ -7,7 +7,7 @@ import pytest
 from kriscv.elf_parser import ELF
 from pyk.kast.inner import KApply
 
-from .utils import BINARY_DIR, RISC0_CONFIG, SP1_CONFIG, SPEC_DIR, filter_symbols
+from .utils import BINARY_DIR, RISC0_CONFIG, SP1_CONFIG, SPEC_DIR, dedent, filter_symbols
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -22,42 +22,292 @@ if TYPE_CHECKING:
 
 TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('stop-test', 'stop-test', {}, []),
-    ('add-test', 'simple-2-op-test', {'opcode': '0x01'}, ['OP0', 'OP1']),
-    ('mul-test', 'simple-2-op-test', {'opcode': '0x02'}, ['OP0', 'OP1']),
-    ('sub-test', 'simple-2-op-test', {'opcode': '0x03'}, ['OP0', 'OP1']),
-    ('div-test', 'simple-2-op-test', {'opcode': '0x04'}, ['OP0', 'OP1']),
-    ('sdiv-test', 'simple-2-op-test', {'opcode': '0x05'}, ['OP0', 'OP1']),
-    ('mod-test', 'simple-2-op-test', {'opcode': '0x06'}, ['OP0', 'OP1']),
-    ('smod-test', 'simple-2-op-test', {'opcode': '0x07'}, ['OP0', 'OP1']),
-    ('addmod-test', 'simple-3-op-test', {'opcode': '0x08'}, ['OP0', 'OP1', 'OP2']),
-    ('mulmod-test', 'simple-3-op-test', {'opcode': '0x09'}, ['OP0', 'OP1', 'OP2']),
-    ('exp-test', 'simple-2-op-test', {'opcode': '0x0a'}, ['OP0', 'OP1']),
-    ('signextend-test', 'simple-2-op-test', {'opcode': '0x0b'}, ['OP0', 'OP1']),
-    ('lt-test', 'simple-2-op-test', {'opcode': '0x10'}, ['OP0', 'OP1']),
-    ('gt-test', 'simple-2-op-test', {'opcode': '0x11'}, ['OP0', 'OP1']),
-    ('slt-test', 'simple-2-op-test', {'opcode': '0x12'}, ['OP0', 'OP1']),
-    ('sgt-test', 'simple-2-op-test', {'opcode': '0x13'}, ['OP0', 'OP1']),
-    ('eq-test', 'simple-2-op-test', {'opcode': '0x14'}, ['OP0', 'OP1']),
-    ('iszero-test', 'simple-1-op-test', {'opcode': '0x15'}, ['OP0']),
-    ('and-test', 'simple-2-op-test', {'opcode': '0x16'}, ['OP0', 'OP1']),
-    ('or-test', 'simple-2-op-test', {'opcode': '0x17'}, ['OP0', 'OP1']),
-    ('xor-test', 'simple-2-op-test', {'opcode': '0x18'}, ['OP0', 'OP1']),
-    ('not-test', 'simple-1-op-test', {'opcode': '0x19'}, ['OP0']),
-    ('byte-test', 'simple-2-op-test', {'opcode': '0x1a'}, ['OP0', 'OP1']),
-    ('shl-test', 'simple-2-op-test', {'opcode': '0x1b'}, ['OP0', 'OP1']),
-    ('shr-test', 'simple-2-op-test', {'opcode': '0x1c'}, ['OP0', 'OP1']),
-    ('sar-test', 'simple-2-op-test', {'opcode': '0x1d'}, ['OP0', 'OP1']),
-    ('keccak256-test', 'simple-2-op-test', {'opcode': '0x20'}, ['OP0', 'OP1']),
-    # ...
+    (
+        'add-test',
+        'simple-2-op-test',
+        {'opcode': '0x01', 'expected': 'op1.wrapping_add(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'mul-test',
+        'simple-2-op-test',
+        {'opcode': '0x02', 'expected': 'op1.wrapping_mul(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sub-test',
+        'simple-2-op-test',
+        {'opcode': '0x03', 'expected': 'op1.wrapping_sub(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'div-test',
+        'simple-2-op-test',
+        {'opcode': '0x04', 'expected': 'op1.wrapping_div(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sdiv-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x05',
+            'expected': dedent(
+                """
+                use revm_interpreter::instructions::i256::i256_div;
+
+                i256_div(op1, op0)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'mod-test',
+        'simple-2-op-test',
+        {'opcode': '0x06', 'expected': 'op1.wrapping_rem(op1)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'smod-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x07',
+            'expected': dedent(
+                """
+                use revm_interpreter::instructions::i256::i256_mod;
+
+                i256_mod(op1, op0)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    ('addmod-test', 'simple-3-op-test', {'opcode': '0x08', 'expected': 'op2.add_mod(op1, op0)'}, ['OP0', 'OP1', 'OP2']),
+    ('mulmod-test', 'simple-3-op-test', {'opcode': '0x09', 'expected': 'op2.mul_mod(op1, op0)'}, ['OP0', 'OP1', 'OP2']),
+    (
+        'exp-test',
+        'simple-2-op-test',
+        {'opcode': '0x0a', 'expected': 'op1.pow(op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'signextend-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x0b',
+            'expected': dedent(
+                """
+                if op1 < U256::from(31) {
+                    let op1 = op1.as_limbs()[0];
+                    let bit_index = (8 * op1 + 7) as usize;
+                    let bit = op0.bit(bit_index);
+                    let mask = (U256::from(1) << bit_index) - U256::from(1);
+                    if bit {
+                        op0 | !mask
+                    } else {
+                        op0 & mask
+                    }
+                } else {
+                    op0
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'lt-test',
+        'simple-2-op-test',
+        {'opcode': '0x10', 'expected': 'U256::from(op1 < op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'gt-test',
+        'simple-2-op-test',
+        {'opcode': '0x11', 'expected': 'U256::from(op1 > op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'slt-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x12',
+            'expected': dedent(
+                """
+                use core::cmp::Ordering;
+                use revm_interpreter::instructions::i256::i256_cmp;
+
+                U256::from(i256_cmp(&op1, &op0) == Ordering::Less)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sgt-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x13',
+            'expected': dedent(
+                """
+                use core::cmp::Ordering;
+                use revm_interpreter::instructions::i256::i256_cmp;
+
+                U256::from(i256_cmp(&op1, &op0) == Ordering::Greater)
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'eq-test',
+        'simple-2-op-test',
+        {'opcode': '0x14', 'expected': 'U256::from(op1 == op0)'},
+        ['OP0', 'OP1'],
+    ),
+    (
+        'iszero-test',
+        'simple-1-op-test',
+        {'opcode': '0x15', 'expected': 'U256::from(op0.is_zero())'},
+        ['OP0'],
+    ),
+    ('and-test', 'simple-2-op-test', {'opcode': '0x16', 'expected': 'op1 & op0'}, ['OP0', 'OP1']),
+    ('or-test', 'simple-2-op-test', {'opcode': '0x17', 'expected': 'op1 | op0'}, ['OP0', 'OP1']),
+    ('xor-test', 'simple-2-op-test', {'opcode': '0x18', 'expected': 'op1 ^ op0'}, ['OP0', 'OP1']),
+    ('not-test', 'simple-1-op-test', {'opcode': '0x19', 'expected': '!op0'}, ['OP0']),
+    (
+        'byte-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1a',
+            'expected': dedent(
+                """
+                if op1 < U256::from(32) {
+                    U256::from(op0.byte(31 - usize::try_from(op1).unwrap()))
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'shl-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1b',
+            'expected': dedent(
+                """
+                if op1 < U256::from(256) {
+                    op0 << op1
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'shr-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1c',
+            'expected': dedent(
+                """
+                if op1 < U256::from(256) {
+                    op0 >> op1
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    (
+        'sar-test',
+        'simple-2-op-test',
+        {
+            'opcode': '0x1d',
+            'expected': dedent(
+                """
+                if op1 < U256::from(256) {
+                    op0.arithmetic_shr(usize::try_from(op1).unwrap())
+                } else if op0.bit(255) {
+                    U256::MAX
+                } else {
+                    U256::ZERO
+                }
+                """
+            ),
+        },
+        ['OP0', 'OP1'],
+    ),
+    ('keccak256-test', 'keccak256-test', {}, ['DATA', 'OFFSET', 'SIZE']),
+    ('address-test', 'address-test', {}, ['VALUE']),
+    # 0x31 BALANCE - Skip: no real implementation in DummyHost
+    ('origin-test', 'host-property-address-test', {'opcode': '0x30', 'property': 'env.tx.caller'}, ['VALUE']),
+    ('caller-test', 'caller-test', {}, ['VALUE']),
+    ('callvalue-test', 'callvalue-test', {}, ['VALUE']),
+    ('calldataload-test', 'calldataload-test', {}, ['DATA', 'DATA_SIZE', 'LOAD_INDEX', 'INDEX']),
+    ('calldatasize-test', 'calldatasize-test', {}, ['DATA', 'DATA_SIZE']),
+    (
+        'calldatacopy-test',
+        'calldatacopy-test',
+        {},
+        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
+    ),
+    ('codesize-test', 'codesize-test', {}, ['CODE', 'CODE_SIZE']),
+    ('codecopy-test', 'codecopy-test', {}, ['CODE', 'CODE_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX']),
+    ('gasprice-test', 'host-property-u256-test', {'opcode': '0x3a', 'property': 'env.tx.gas_price'}, ['VALUE']),
+    # 0x3b EXTCODESIZE - Skip: no real implementation in DummyHost
+    # 0x3c EXTCODECOPY - Skip: no real implementation in DummyHost
+    ('returndatasize-test', 'returndatasize-test', {}, ['DATA', 'DATA_SIZE']),
+    (
+        'returndatacopy-test',
+        'returndatacopy-test',
+        {},
+        ['DATA', 'DATA_SIZE', 'DEST_OFFSET', 'COPY_OFFSET', 'COPY_SIZE', 'INDEX'],
+    ),
+    # 0x3f EXTCODEHASH - Skip: no real implementation in DummyHost
+    # 0x40 BLOCKHASH - Skip: no real implementation in DummyHost
+    ('coinbase-test', 'host-property-address-test', {'opcode': '0x41', 'property': 'env.block.coinbase'}, ['VALUE']),
+    ('timestamp-test', 'host-property-u256-test', {'opcode': '0x42', 'property': 'env.block.timestamp'}, ['VALUE']),
+    ('number-test', 'host-property-u256-test', {'opcode': '0x43', 'property': 'env.block.number'}, ['VALUE']),
+    ('prevrandao-test', 'prevrandao-test', {}, ['VALUE']),
+    ('gaslimit-test', 'host-property-u256-test', {'opcode': '0x45', 'property': 'env.block.gas_limit'}, ['VALUE']),
+    ('chainid-test', 'chainid-test', {}, ['VALUE']),
+    # 0x47 SELFBALANCE - Skip: no real implementation in DummyHost
+    ('basefee-test', 'host-property-u256-test', {'opcode': '0x48', 'property': 'env.block.basefee'}, ['VALUE']),
+    ('blobhash-test', 'blobhash-test', {}, ['INDEX', 'VALUE']),
+    ('blobbasefee-test', 'blobbasefee-test', {}, ['VALUE']),
+    ('pop-test', 'pop-test', {}, ['VALUE']),
     ('mload-test', 'mload-test', {}, ['OFFSET', 'VALUE']),
+    ('mload-concrete-offset-test', 'mload-test', {}, ['VALUE']),
     ('mstore-test', 'mstore-test', {}, ['OFFSET', 'VALUE']),
+    ('mstore-concrete-offset-test', 'mstore-test', {}, ['VALUE']),
     ('mstore8-test', 'mstore8-test', {}, ['OFFSET', 'VALUE']),
     ('sload-test', 'sload-test', {}, ['KEY', 'VALUE']),
+    ('sload-concrete-key-test', 'sload-test', {}, ['VALUE']),
+    ('sload-concrete-value-test', 'sload-test', {}, ['KEY']),
     ('sstore-test', 'sstore-test', {}, ['KEY', 'VALUE']),
-    # ...
+    ('sstore-concrete-key-test', 'sstore-test', {}, ['VALUE']),
+    ('sstore-concrete-value-test', 'sstore-test', {}, ['KEY']),
+    ('jump-test', 'jump-test', {}, ['CODE', 'CODE_SIZE']),
+    ('jumpi-test', 'jumpi-test', {}, ['CODE', 'CODE_SIZE', 'COND']),
+    ('pc-test', 'pc-test', {}, ['CODE', 'PC']),
+    ('msize-test', 'msize-test', {}, ['SIZE']),
+    ('gas-test', 'gas-test', {}, ['GAS_LIMIT']),
+    # 0x5b JUMPDEST - tested with JUMP and JUMPI
     ('tload-test', 'tload-test', {}, ['KEY', 'VALUE']),
+    ('tload-concrete-key-test', 'tload-test', {}, ['VALUE']),
+    ('tload-concrete-value-test', 'tload-test', {}, ['KEY']),
     ('tstore-test', 'tstore-test', {}, ['KEY', 'VALUE']),
-    # 0x5e MCOPY
+    ('tstore-concrete-key-test', 'tstore-test', {}, ['VALUE']),
+    ('tstore-concrete-value-test', 'tstore-test', {}, ['KEY']),
+    ('mcopy-test', 'mcopy-test', {}, ['DATA', 'DEST_OFFSET', 'SRC_OFFSET', 'SIZE', 'INDEX']),
     ('push0-test', 'push-test', {'opcode': '0x5f', 'arity': '0', 'value': '[]'}, []),
     ('push1-test', 'push-test', {'opcode': '0x60', 'arity': '1', 'value': '[0x01]'}, ['OP0']),
     ('push2-test', 'push-test', {'opcode': '0x61', 'arity': '2', 'value': '[0x00, 0x01]'}, ['OP0']),
@@ -70,6 +320,51 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
     ('swap2-test', 'swap-test', {'opcode': '0x91', 'n': '2'}, ['OP0', 'OP1']),
     ('swap3-test', 'swap-test', {'opcode': '0x92', 'n': '3'}, ['OP0', 'OP1']),
     ('swap4-test', 'swap-test', {'opcode': '0x93', 'n': '4'}, ['OP0', 'OP1']),
+    ('log0-test', 'log-test', {'opcode': '0xa0', 'n_topics': '0'}, ['DATA', 'OFFSET', 'SIZE', 'INDEX']),
+    (
+        'log1-test',
+        'log-test',
+        {'opcode': '0xa1', 'n_topics': '1'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    (
+        'log2-test',
+        'log-test',
+        {'opcode': '0xa2', 'n_topics': '2'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    (
+        'log3-test',
+        'log-test',
+        {'opcode': '0xa3', 'n_topics': '3'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    (
+        'log4-test',
+        'log-test',
+        {'opcode': '0xa4', 'n_topics': '4'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX', 'TOPIC_DATA', 'TOPIC_INDEX'],
+    ),
+    ('create-test', 'create-test', {}, ['DATA', 'VALUE', 'OFFSET', 'SIZE', 'INDEX']),
+    # 0xf1 CALL - Skip: no real implementation in DummyHost
+    # 0xf2 CALLCODE - Skip: no real implementation in DummyHost
+    (
+        'return-test',
+        'return-with-output-test',
+        {'opcode': '0xf3', 'instruction_result': 'Return'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
+    ),
+    # 0xf4 DELEGATECALL - Skip: no real implementation in DummyHost
+    ('create2-test', 'create2-test', {}, ['DATA', 'VALUE', 'OFFSET', 'SIZE', 'SALT', 'INDEX']),
+    # 0xfa STATICCALL - Skip: no real implementation in DummyHost
+    (
+        'revert-test',
+        'return-with-output-test',
+        {'opcode': '0xfd', 'instruction_result': 'Revert'},
+        ['DATA', 'OFFSET', 'SIZE', 'INDEX'],
+    ),
+    ('invalid-test', 'invalid-test', {}, []),
+    # 0xff SELFDESTRUCT - Skip: no real implementation in DummyHost
 )
 
 GEN_CLAIM_TEST_DATA: Final = tuple(
@@ -187,7 +482,7 @@ def build_config_for_binary(
 
 
 MAX_DEPTH: Final = 1000
-MAX_ITERATIONS: Final = 1
+MAX_ITERATIONS: Final = 4000
 
 SPEC_FILES: Final = tuple(SPEC_DIR.glob('*.k'))
 
@@ -210,6 +505,7 @@ def test_symbolic(
         claim_id=spec_file.stem,
         max_depth=MAX_DEPTH,
         max_iterations=MAX_ITERATIONS,
+        optimize_kcfg=True,
     )
 
     # Then
