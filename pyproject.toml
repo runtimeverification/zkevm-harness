@@ -9,7 +9,7 @@ description = ""
 readme = "README.md"
 requires-python = "~=3.10"
 dependencies = [
-    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@v0.1.112"
+    "kriscv@git+https://github.com/runtimeverification/riscv-semantics.git@v0.1.113"
 ]
 
 [[project.authors]]
