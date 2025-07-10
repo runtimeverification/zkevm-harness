@@ -9,8 +9,10 @@ use revm_interpreter::DummyHost;
 
 const OPCODE: u8 = 0x35;
 
+const MAX_DATA_SIZE: usize = 128;
+
 #[unsafe(no_mangle)]
-pub static mut DATA: [u8; 128] = [
+pub static mut DATA: [u8; MAX_DATA_SIZE] = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
     0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
@@ -22,31 +24,30 @@ pub static mut DATA: [u8; 128] = [
 ];
 
 #[unsafe(no_mangle)]
-pub static mut DATA_SIZE: u8 = 128;
+pub static mut DATA_SIZE: usize = 32;
 
 #[unsafe(no_mangle)]
-pub static mut LOAD_INDEX: u8 = 0;
+pub static mut LOAD_INDEX: usize = 11;
 
 #[unsafe(no_mangle)]
-pub static mut INDEX: u8 = 1;
-
+pub static mut INDEX: usize = 1;
 
 fn main() {
     // Given
 
     unsafe {
-        // assume DATA_SIZE <= 128
-        if DATA_SIZE > 128 {
-            return
+        // assume DATA_SIZE <= MAX_DATA_SIZE
+        if DATA_SIZE > MAX_DATA_SIZE {
+            return;
         }
 
         // assume INDEX <= 32
         if INDEX > 32 {
-            return
+            return;
         }
     }
 
-    let input = Bytes::copy_from_slice(unsafe { &DATA [..usize::from(DATA_SIZE)] });
+    let input = Bytes::copy_from_slice(unsafe { &DATA[..DATA_SIZE] });
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -63,13 +64,21 @@ fn main() {
     let gas_limit = 100000;
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
-    let Ok(()) = interpreter.stack.push(U256::from(unsafe { LOAD_INDEX })) else {
-        panic!()
-    };
+    let load_index = U256::from(unsafe { LOAD_INDEX });
+    interpreter.stack.push(load_index).unwrap();
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
     let mut host = DummyHost::default();
+
+    let expected = unsafe {
+        let data_index = LOAD_INDEX + INDEX;
+        if data_index < DATA_SIZE {
+            DATA[data_index]
+        } else {
+            0x00
+        }
+    };
 
     // When
     let action = interpreter.run(memory, &instruction_table, &mut host);
@@ -78,22 +87,7 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-    let Ok(res) = interpreter.stack.pop() else {
-        panic!()
-    };
-    let actual: [u8; 32] = res.to_be_bytes();
-    unsafe {
-        let actual_byte = actual[usize::from(INDEX)];
-        let data_index: usize = LOAD_INDEX as usize + INDEX as usize;
-        if data_index < DATA_SIZE as usize {
-            if actual_byte != DATA[data_index] {
-                panic!();
-            }
-        } else {
-            if actual_byte != 0x00 {
-                panic!();
-            }
-        }
-    }
-
+    let actual_u256 = interpreter.stack.pop().unwrap();
+    let actual = actual_u256.byte(31 - unsafe { INDEX });
+    assert_eq!(actual, expected);
 }

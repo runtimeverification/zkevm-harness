@@ -17,7 +17,7 @@ pub static mut VALUE: [u8; 32] = [
 
 fn main() {
     // Given
-    let input = Bytes::from([]);
+    let input = Bytes::new();
     let bytecode = Bytecode::new_raw(Bytes::from([OPCODE]));
     let target_address = address!("0x0000000000000000000000000000000000000001");
     let caller = address!("0x0000000000000000000000000000000000000002");
@@ -35,9 +35,7 @@ fn main() {
     let mut interpreter = Interpreter::new(contract, gas_limit, false);
 
     let value = U256::from_be_bytes(unsafe { VALUE });
-    let Ok(()) = interpreter.stack.push(value) else {
-        panic!()
-    };
+    interpreter.stack.push(value).unwrap();
 
     let memory = SharedMemory::new();
     let instruction_table = make_instruction_table::<DummyHost, CancunSpec>();
@@ -50,8 +48,5 @@ fn main() {
     let InterpreterAction::Return { result: _ } = action else {
         panic!()
     };
-
-    if interpreter.stack.len() != 0 {
-        panic!();
-    }
+    assert_eq!(interpreter.stack.len(), 0);
 }

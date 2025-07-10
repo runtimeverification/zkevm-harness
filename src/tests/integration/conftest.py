@@ -25,8 +25,7 @@ def pytest_addoption(parser: Parser) -> None:
     )
     parser.addoption(
         '--save-bug-report',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Generate bug report in the temporary directory',
     )
 
