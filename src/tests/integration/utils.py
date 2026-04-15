@@ -76,20 +76,16 @@ def dedent(text: str) -> str:
 
 RISC0_CONFIG: Final = BuildConfig(
     build_cmd=('cargo', 'risczero', 'build'),
-    zkvm_deps=dedent(
-        f"""
+    zkvm_deps=dedent(f"""
         bytemuck_derive = "=1.8.1"
         risc0-zkvm = {{ version = "={RISC0_VERSION}", default-features = false }}
-        """
-    ),
-    src_header=dedent(
-        """
+    """),
+    src_header=dedent("""
         #![no_main]
         #![no_std]
         #![feature(unsafe_attributes)]
         risc0_zkvm::guest::entry!(main);
-        """
-    ),
+    """),
     elf_path='target/riscv32im-risc0-zkvm-elf/docker',
     end_pattern='sys_halt',
     target='zkevm-semantics.risc0',
@@ -98,12 +94,10 @@ RISC0_CONFIG: Final = BuildConfig(
 SP1_CONFIG: Final = BuildConfig(
     build_cmd=('cargo', 'prove', 'build'),
     zkvm_deps=f'sp1-zkvm = "={SP1_VERSION}"',
-    src_header=dedent(
-        """
+    src_header=dedent("""
         #![no_main]
         sp1_zkvm::entrypoint!(main);
-        """
-    ),
+    """),
     elf_path='target/elf-compilation/riscv32im-succinct-zkvm-elf/release',
     end_pattern='_ZN8sp1_zkvm8syscalls4halt12syscall_halt*',
     target='zkevm-semantics.sp1',
