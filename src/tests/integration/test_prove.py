@@ -51,13 +51,11 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x05',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 use revm_interpreter::instructions::i256::i256_div;
 
                 i256_div(op1, op0)
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -72,13 +70,11 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x07',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 use revm_interpreter::instructions::i256::i256_mod;
 
                 i256_mod(op1, op0)
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -95,8 +91,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x0b',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 if op1 < U256::from(31) {
                     let op1 = op1.as_limbs()[0];
                     let bit_index = (8 * op1 + 7) as usize;
@@ -110,8 +105,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
                 } else {
                     op0
                 }
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -132,14 +126,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x12',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 use core::cmp::Ordering;
                 use revm_interpreter::instructions::i256::i256_cmp;
 
                 U256::from(i256_cmp(&op1, &op0) == Ordering::Less)
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -148,14 +140,12 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x13',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 use core::cmp::Ordering;
                 use revm_interpreter::instructions::i256::i256_cmp;
 
                 U256::from(i256_cmp(&op1, &op0) == Ordering::Greater)
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -180,15 +170,13 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x1a',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 if op1 < U256::from(32) {
                     U256::from(op0.byte(31 - usize::try_from(op1).unwrap()))
                 } else {
                     U256::ZERO
                 }
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -197,15 +185,13 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x1b',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 if op1 < U256::from(256) {
                     op0 << op1
                 } else {
                     U256::ZERO
                 }
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -214,15 +200,13 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x1c',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 if op1 < U256::from(256) {
                     op0 >> op1
                 } else {
                     U256::ZERO
                 }
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
@@ -231,8 +215,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
         'simple-2-op-test',
         {
             'opcode': '0x1d',
-            'expected': dedent(
-                """
+            'expected': dedent("""
                 if op1 < U256::from(256) {
                     op0.arithmetic_shr(usize::try_from(op1).unwrap())
                 } else if op0.bit(255) {
@@ -240,8 +223,7 @@ TEMPLATE_DATA: Final[tuple[tuple[str, str, dict[str, str], list[str]], ...]] = (
                 } else {
                     U256::ZERO
                 }
-                """
-            ),
+            """),
         },
         ['OP0', 'OP1'],
     ),
